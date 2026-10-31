@@ -379,30 +379,6 @@ TEST(Traits, isDetectedV) {
   EXPECT_FALSE((folly::is_detected_v<detector_find, double, char>));
 }
 
-TEST(Traits, fallbackIsNothrowConvertible) {
-  EXPECT_FALSE((folly::fallback::is_nothrow_convertible<int, void>::value));
-  EXPECT_TRUE((folly::fallback::is_nothrow_convertible<void, void>::value));
-  struct foo {
-    /* implicit */ [[maybe_unused]] operator std::false_type();
-    /* implicit */ [[maybe_unused]] operator std::true_type() noexcept;
-  };
-  EXPECT_FALSE(
-      (folly::fallback::is_nothrow_convertible<foo, std::false_type>::value));
-  EXPECT_TRUE(
-      (folly::fallback::is_nothrow_convertible<foo, std::true_type>::value));
-}
-
-TEST(Traits, isNothrowConvertible) {
-  EXPECT_FALSE((folly::is_nothrow_convertible<int, void>::value));
-  EXPECT_TRUE((folly::is_nothrow_convertible<void, void>::value));
-  struct foo {
-    /* implicit */ [[maybe_unused]] operator std::false_type();
-    /* implicit */ [[maybe_unused]] operator std::true_type() noexcept;
-  };
-  EXPECT_FALSE((folly::is_nothrow_convertible<foo, std::false_type>::value));
-  EXPECT_TRUE((folly::is_nothrow_convertible<foo, std::true_type>::value));
-}
-
 TEST(Traits, alignedStorageForT) {
   struct alignas(2) Foo {
     char data[4];
@@ -584,20 +560,6 @@ TEST(Traits, UncvrefSameAs) {
       !std::invocable<decltype(refersToExample), std::vector<char>&&>);
 }
 #endif
-
-TEST(Traits, isUnboundedArrayV) {
-  EXPECT_FALSE((folly::is_unbounded_array_v<void>));
-  EXPECT_FALSE((folly::is_unbounded_array_v<int>));
-  EXPECT_TRUE((folly::is_unbounded_array_v<int[]>));
-  EXPECT_FALSE((folly::is_unbounded_array_v<int[1]>));
-}
-
-TEST(Traits, isBoundedArrayV) {
-  EXPECT_FALSE((folly::is_bounded_array_v<void>));
-  EXPECT_FALSE((folly::is_bounded_array_v<int>));
-  EXPECT_FALSE((folly::is_bounded_array_v<int[]>));
-  EXPECT_TRUE((folly::is_bounded_array_v<int[1]>));
-}
 
 TEST(Traits, isInstantiationOfV) {
   EXPECT_TRUE((is_instantiation_of_v<A, A<int>>));

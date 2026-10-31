@@ -165,32 +165,6 @@ struct is_complete {
 template <typename T>
 constexpr auto is_complete_v = is_complete<T>::value;
 
-/// is_unbounded_array_v
-/// is_unbounded_array
-///
-/// A trait variable and type to check if a given type is an unbounded array.
-///
-/// mimic: std::is_unbounded_array_d, std::is_unbounded_array (C++20)
-template <typename T>
-inline constexpr bool is_unbounded_array_v = false;
-template <typename T>
-inline constexpr bool is_unbounded_array_v<T[]> = true;
-template <typename T>
-struct is_unbounded_array : std::bool_constant<is_unbounded_array_v<T>> {};
-
-/// is_bounded_array_v
-/// is_bounded_array
-///
-/// A trait variable and type to check if a given type is a bounded array.
-///
-/// mimic: std::is_bounded_array_d, std::is_bounded_array (C++20)
-template <typename T>
-inline constexpr bool is_bounded_array_v = false;
-template <typename T, std::size_t S>
-inline constexpr bool is_bounded_array_v<T[S]> = true;
-template <typename T>
-struct is_bounded_array : std::bool_constant<is_bounded_array_v<T>> {};
-
 /// is_instantiation_of_v
 /// is_instantiation_of
 /// instantiated_from
@@ -595,37 +569,6 @@ using aligned_storage_t = typename detail::aligned_storage<Len, Align>::type;
 
 template <typename T>
 using aligned_storage_for_t = aligned_storage_t<sizeof(T), alignof(T)>;
-
-//  ----
-
-namespace fallback {
-template <typename From, typename To>
-inline constexpr bool is_nothrow_convertible_v =
-    (std::is_void<From>::value && std::is_void<To>::value) ||
-    ( //
-        std::is_convertible<From, To>::value &&
-        std::is_nothrow_constructible<To, From>::value);
-template <typename From, typename To>
-struct is_nothrow_convertible
-    : std::bool_constant<is_nothrow_convertible_v<From, To>> {};
-} // namespace fallback
-
-//  is_nothrow_convertible
-//  is_nothrow_convertible_v
-//
-//  Import or backport:
-//  * std::is_nothrow_convertible
-//  * std::is_nothrow_convertible_v
-//
-//  mimic: is_nothrow_convertible, C++20
-#if defined(__cpp_lib_is_nothrow_convertible) && \
-    __cpp_lib_is_nothrow_convertible >= 201806L
-using std::is_nothrow_convertible;
-using std::is_nothrow_convertible_v;
-#else
-using fallback::is_nothrow_convertible;
-using fallback::is_nothrow_convertible_v;
-#endif
 
 /**
  * IsRelocatable<T>::value describes the ability of moving around

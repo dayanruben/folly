@@ -44,7 +44,7 @@ struct ok_one_ {
           std::is_void_v<T> || //
           std::is_reference_v<T> || //
           std::is_function_v<T> || //
-          is_unbounded_array_v<T> || //
+          std::is_unbounded_array_v<T> || //
           false);
 
   // note: void return type with no function body to enforce that, in the

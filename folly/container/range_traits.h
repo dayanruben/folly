@@ -78,7 +78,7 @@ constexpr bool is_contiguous_range_v_ = //
 #if defined(__cpp_lib_ranges)
     || std::ranges::contiguous_range<R>
 #endif
-    || is_bounded_array_v<R> //
+    || std::is_bounded_array_v<R> //
     || detected_or_t<std::false_type, is_contiguous_range_fallback_impl_, R>{};
 
 } // namespace detail
@@ -87,7 +87,7 @@ constexpr bool is_contiguous_range_v_ = //
 //
 //  True when any of:
 //  * std::ranges::contiguous_range holds, if available
-//  * is_bounded_array_v holds
+//  * std::is_bounded_array_v holds
 //  * certain conditions using member types or type aliases size_type and
 //    value_type and member functions size() and data()
 //  Otherwise false.
