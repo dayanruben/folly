@@ -279,17 +279,12 @@ struct is_constexpr_default_constructible
 template <typename T>
 using _t = typename T::type;
 
-/**
- * A type trait to remove all const volatile and reference qualifiers on a
- * type T
- */
-template <typename T>
-struct remove_cvref {
-  using type =
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type;
-};
-template <typename T>
-using remove_cvref_t = typename remove_cvref<T>::type;
+//  remove_cvref
+//  remove_cvref_t
+//
+//  Import std::remove_cvref and std::remove_cvref_t.
+using std::remove_cvref;
+using std::remove_cvref_t;
 
 namespace detail {
 template <typename Src>
