@@ -86,15 +86,15 @@ endforeach ()
 # Tell setup.py where to find includes and libfolly.so
 set(prop "$<TARGET_PROPERTY:folly,INCLUDE_DIRECTORIES>")
 set(incs "$<$<BOOL:${prop}>:-I$<JOIN:${prop},:>>")
-set(glog_lib "${GLOG_LIBRARY}")
-cmake_path(REMOVE_FILENAME glog_lib)
-set(libs "-L${CMAKE_CURRENT_BINARY_DIR}:${CMAKE_BINARY_DIR}:${glog_lib}")
+# glog::glog can be glog's own target or FindGlog's, and folly can be a
+# subproject, so ask the targets where the libraries are.
+set(libs "-L$<TARGET_FILE_DIR:folly_python_cpp>:$<TARGET_FILE_DIR:folly>:$<TARGET_FILE_DIR:glog::glog>")
 
 # Generate API headers only (no linking)
 add_custom_command(
   OUTPUT ${_cybld}/folly/iobuf_api.h
   COMMAND
-    python3
+    ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
     --api-only
   DEPENDS create_binding_symlink
@@ -131,6 +131,7 @@ add_library(
   executor.cpp
   iobuf.cpp
 )
+add_library(Folly::folly_python_cpp ALIAS folly_python_cpp)
 
 target_include_directories(folly_python_cpp PRIVATE ${Python3_INCLUDE_DIRS})
 target_link_libraries(folly_python_cpp PRIVATE Python3::Python)
@@ -150,6 +151,12 @@ add_custom_target(
     folly_python_api_headers
   WORKING_DIRECTORY ${_cybld}
 )
+# Where the wheel goes, for a parent project that builds folly with
+# thrift-python and bundles folly's Python package.
+set_property(
+  TARGET folly_python_bindings
+  PROPERTY FOLLY_PYTHON_WHEEL_DIR "${_cybld}/dist"
+)
 
 add_custom_command(
   TARGET folly_python_bindings
@@ -162,7 +169,7 @@ add_custom_command(
     "CXXFLAGS=${CMAKE_CXX_FLAGS}"
     "CC=${CMAKE_C_COMPILER}"
     "CXX=${CMAKE_CXX_COMPILER}"
-    python3
+    ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
     build_ext
     -f
@@ -192,7 +199,7 @@ add_custom_command(
     "CXXFLAGS=${CMAKE_CXX_FLAGS}"
     "CC=${CMAKE_C_COMPILER}"
     "CXX=${CMAKE_CXX_COMPILER}"
-    python3
+    ${Python3_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
     bdist_wheel
   WORKING_DIRECTORY ${_cybld}
@@ -217,7 +224,7 @@ install(
   file(GLOB _folly_wheel \"${_cybld}/dist/folly-*.whl\")
   if(_folly_wheel)
     execute_process(
-      COMMAND python3 -m pip install \${_folly_wheel}
+      COMMAND \"${Python3_EXECUTABLE}\" -m pip install \${_folly_wheel}
         --prefix ${INSTALL_DIR}
         --no-deps
         --force-reinstall
