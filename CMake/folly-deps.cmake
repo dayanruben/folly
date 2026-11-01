@@ -249,6 +249,12 @@ if (NOT LibEvent_FOUND)
   # The targets carry the include directories; clear the failed find_path()
   # result.
   set(LIBEVENT_INCLUDE_DIR "")
+  # As for glog, a project built alongside folly gets FindLibEvent's variables
+  # from here, or it reads the NOTFOUND results cached above.
+  file(WRITE "${CMAKE_FIND_PACKAGE_REDIRECTS_DIR}/libevent-extra.cmake"
+"set(LIBEVENT_LIB ${LIBEVENT_LIB})
+set(LIBEVENT_INCLUDE_DIR \"\")
+")
   set_property(GLOBAL APPEND PROPERTY FOLLY_BUILD_LOCAL_TARGETS ${LIBEVENT_LIB})
 endif ()
 list(APPEND FOLLY_LINK_LIBRARIES ${LIBEVENT_LIB})
