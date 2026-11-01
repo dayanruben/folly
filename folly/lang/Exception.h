@@ -74,7 +74,7 @@ struct throw_exception_arg_array_ {
 };
 struct throw_exception_arg_trivial_ {
   template <typename R>
-  using apply = remove_cvref_t<R>;
+  using apply = std::remove_cvref_t<R>;
 };
 struct throw_exception_arg_base_ {
   template <typename R>
@@ -86,7 +86,7 @@ using throw_exception_arg_ = //
         std::is_array<std::remove_reference_t<R>>::value,
         throw_exception_arg_array_,
         conditional_t<
-            std::is_trivially_copyable_v<remove_cvref_t<R>>,
+            std::is_trivially_copyable_v<std::remove_cvref_t<R>>,
             throw_exception_arg_trivial_,
             throw_exception_arg_base_>>;
 template <typename R>
@@ -907,7 +907,7 @@ struct make_exception_ptr_with_fn {
   template <typename E>
   FOLLY_ERASE std::exception_ptr operator()(
       std::in_place_t /*unused*/, E&& e) const noexcept {
-    constexpr auto tag = std::in_place_type<remove_cvref_t<E>>;
+    constexpr auto tag = std::in_place_type<std::remove_cvref_t<E>>;
     check_(FOLLY_TYPE_INFO_OF(std::decay_t<E>), FOLLY_TYPE_INFO_OF(e));
     return operator()(tag, static_cast<E&&>(e));
   }

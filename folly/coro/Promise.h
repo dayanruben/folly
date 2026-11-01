@@ -40,7 +40,7 @@ std::pair<Promise<T>, Future<T>> makePromiseContract();
 
 // Creates fulfilled future
 template <typename T>
-Future<remove_cvref_t<T>> makeFuture(T&&);
+Future<std::remove_cvref_t<T>> makeFuture(T&&);
 template <typename T>
 Future<T> makeFuture(exception_wrapper&&);
 Future<void> makeFuture();
@@ -333,8 +333,8 @@ std::pair<Promise<T>, Future<T>> makePromiseContract() {
 }
 
 template <typename T>
-Future<remove_cvref_t<T>> makeFuture(T&& t) {
-  auto [promise, future] = makePromiseContract<remove_cvref_t<T>>();
+Future<std::remove_cvref_t<T>> makeFuture(T&& t) {
+  auto [promise, future] = makePromiseContract<std::remove_cvref_t<T>>();
   promise.setValue(std::forward<T>(t));
   return std::move(future);
 }

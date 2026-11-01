@@ -130,7 +130,7 @@ struct uint_division_result {
 template <typename Word>
 class uint_divisor {
   static_assert(
-      std::is_same_v<Word, folly::remove_cvref_t<Word>> &&
+      std::is_same_v<Word, std::remove_cvref_t<Word>> &&
           folly::is_integral_v<Word> && folly::is_unsigned_v<Word> &&
           !std::is_same_v<Word, bool>,
       "Word must be an unsigned integer type");

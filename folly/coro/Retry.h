@@ -153,7 +153,7 @@ template <typename Func, typename Decider>
 auto retryN(uint32_t maxRetries, Func&& func, Decider&& decider) {
   return folly::coro::retryWhen(
       static_cast<Func&&>(func),
-      detail::RetryImmediatelyWithLimit<remove_cvref_t<Decider>>{
+      detail::RetryImmediatelyWithLimit<std::remove_cvref_t<Decider>>{
           maxRetries, static_cast<Decider&&>(decider)});
 }
 
@@ -247,8 +247,8 @@ auto retryWithExponentialBackoff(
   return folly::coro::retryWhen(
       static_cast<Func&&>(func),
       detail::ExponentialBackoffWithJitter<
-          remove_cvref_t<URNG>,
-          remove_cvref_t<Decider>>{
+          std::remove_cvref_t<URNG>,
+          std::remove_cvref_t<Decider>>{
           timeKeeper,
           maxRetries,
           minBackoff,

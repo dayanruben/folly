@@ -158,7 +158,7 @@ using detect_resize_without_initialization_member =
 
 template <typename C>
 using resize_without_initialization_value_type =
-    typename remove_cvref_t<C>::value_type;
+    typename std::remove_cvref_t<C>::value_type;
 
 template <typename C>
 inline constexpr bool has_resize_without_initialization_member_v =

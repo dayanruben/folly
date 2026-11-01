@@ -77,8 +77,9 @@ using ArgumentTypes =
 template <typename Fn, typename... Args>
 struct HasArgumentTypes
     : boost::mpl::template equal<
-          typename boost::mpl::
-              transform<ArgumentTypes<Fn>, remove_cvref<boost::mpl::_1>>::type,
+          typename boost::mpl::transform<
+              ArgumentTypes<Fn>,
+              std::remove_cvref<boost::mpl::_1>>::type,
           boost::mpl::vector<Args...>>::type {};
 template <typename... Args>
 using EnableForArgTypes =

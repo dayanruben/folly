@@ -2408,7 +2408,7 @@ auto collectAll(Collection&& c) -> decltype(collectAll(c.begin(), c.end())) {
 // Unsafe variant of collectAll, see comment above for details. Returns
 // a Future<std::tuple<Try<T1>, Try<T2>, ...>> on the Inline executor.
 template <typename... Fs>
-Future<std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...>>
+Future<std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...>>
 collectAllUnsafe(Fs&&... fs);
 
 /// This version takes a varying number of Futures instead of an iterator.
@@ -2416,7 +2416,7 @@ collectAllUnsafe(Fs&&... fs);
 /// is a SemiFuture<std::tuple<Try<T1>, Try<T2>, ...>>.
 /// The Futures are moved in, so your copies are invalid.
 template <typename... Fs>
-SemiFuture<std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...>>
+SemiFuture<std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...>>
 collectAll(Fs&&... fs);
 
 /// Like collectAll, but will short circuit on the first exception. Thus, the
@@ -2452,7 +2452,7 @@ auto collectUnsafe(Collection&& c)
 /// type of the returned SemiFuture is std::tuple<T1, T2, ...> instead of
 /// std::tuple<Try<T1>, Try<T2>, ...>
 template <typename... Fs>
-SemiFuture<std::tuple<typename remove_cvref_t<Fs>::value_type...>> collect(
+SemiFuture<std::tuple<typename std::remove_cvref_t<Fs>::value_type...>> collect(
     Fs&&... fs);
 
 /** The result is a pair of the index of the first Future to complete and

@@ -38,7 +38,7 @@ AsyncGenerator<ReturnReference> transform(
     if constexpr (std::is_constructible_v<ReturnReference&&, InvokeResult>) {
       co_yield std::invoke(transformFn, std::move(item).value());
     } else {
-      remove_cvref_t<ReturnReference> result =
+      std::remove_cvref_t<ReturnReference> result =
           std::invoke(transformFn, std::move(item).value());
       co_yield std::forward<ReturnReference>(result);
     }

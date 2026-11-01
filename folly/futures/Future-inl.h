@@ -961,7 +961,7 @@ template <typename R, typename Caller, typename... Args>
 Future<typename isFuture<R>::Inner> Future<T>::then(
     R (Caller::*func)(Args...), Caller* instance) && {
   using FirstArg =
-      remove_cvref_t<typename futures::detail::ArgType<Args...>::FirstArg>;
+      std::remove_cvref_t<typename futures::detail::ArgType<Args...>::FirstArg>;
 
   return std::move(*this).thenTry([instance, func](Try<T>&& t) {
     return (instance->*func)(t.template get<isTry<FirstArg>::value, Args>()...);
@@ -1467,9 +1467,10 @@ void stealDeferredExecutors(
 // collectAll (variadic)
 
 template <typename... Fs>
-SemiFuture<std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...>>
+SemiFuture<std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...>>
 collectAll(Fs&&... fs) {
-  using Result = std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...>;
+  using Result =
+      std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...>;
   struct Context {
     ~Context() { p.setValue(std::move(results)); }
     Promise<Result> p;
@@ -1501,7 +1502,7 @@ collectAll(Fs&&... fs) {
 }
 
 template <typename... Fs>
-Future<std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...>>
+Future<std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...>>
 collectAllUnsafe(Fs&&... fs) {
   return collectAll(static_cast<Fs&&>(fs)...).toUnsafeFuture();
 }
@@ -1643,9 +1644,9 @@ collectUnsafe(InputIterator first, InputIterator last) {
 // collect (variadic)
 
 template <typename... Fs>
-SemiFuture<std::tuple<typename remove_cvref_t<Fs>::value_type...>> collect(
+SemiFuture<std::tuple<typename std::remove_cvref_t<Fs>::value_type...>> collect(
     Fs&&... fs) {
-  using Result = std::tuple<typename remove_cvref_t<Fs>::value_type...>;
+  using Result = std::tuple<typename std::remove_cvref_t<Fs>::value_type...>;
   struct Context {
     ~Context() {
       if (!threw.load(std::memory_order_relaxed)) {
@@ -1669,7 +1670,7 @@ SemiFuture<std::tuple<typename remove_cvref_t<Fs>::value_type...>> collect(
       }
     }
     Promise<Result> p;
-    std::tuple<Try<typename remove_cvref_t<Fs>::value_type>...> results;
+    std::tuple<Try<typename std::remove_cvref_t<Fs>::value_type>...> results;
     Executor::KeepAlive<> ka;
     std::atomic<bool> threw{false};
     std::atomic<size_t> count{std::tuple_size<decltype(results)>::value};
@@ -1711,8 +1712,8 @@ SemiFuture<std::tuple<typename remove_cvref_t<Fs>::value_type...>> collect(
 }
 
 template <typename... Fs>
-Future<std::tuple<typename remove_cvref_t<Fs>::value_type...>> collectUnsafe(
-    Fs&&... fs) {
+Future<std::tuple<typename std::remove_cvref_t<Fs>::value_type...>>
+collectUnsafe(Fs&&... fs) {
   return collect(static_cast<Fs&&>(fs)...).toUnsafeFuture();
 }
 

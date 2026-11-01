@@ -127,7 +127,7 @@ class [[FOLLY_ATTR_CLANG_CORO_AWAIT_ELIDABLE]] ValueOrErrorOrStopped
   template <
       typename Self,
       std::enable_if_t<
-          std::is_same_v<remove_cvref_t<Self>, ValueOrErrorOrStopped>,
+          std::is_same_v<std::remove_cvref_t<Self>, ValueOrErrorOrStopped>,
           int> = 0,
       typename T2 = like_t<Self, T>,
       std::enable_if_t<is_awaitable_v<T2>, int> = 0>
@@ -156,7 +156,7 @@ ValueOrErrorImpl : public CommutativeWrapperAwaitable<ValueOrErrorImpl, T> {
   template <
       typename Self,
       std::enable_if_t<
-          std::is_same_v<remove_cvref_t<Self>, ValueOrErrorImpl>,
+          std::is_same_v<std::remove_cvref_t<Self>, ValueOrErrorImpl>,
           int> = 0,
       typename T2 = like_t<Self, T>,
       std::enable_if_t<is_awaitable_v<T2>, int> = 0>

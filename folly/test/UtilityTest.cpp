@@ -525,7 +525,7 @@ static_assert(testForward<const MethodOverloadDelegation&&, const int&&>);
 
 template <class Self>
 constexpr bool testConstexpr =
-    static_cast<Self>(std::array<folly::remove_cvref_t<Self>, 1>{}[0])
+    static_cast<Self>(std::array<std::remove_cvref_t<Self>, 1>{}[0])
         .testConstexpr() == 42;
 
 static_assert(testConstexpr<MethodOverloadDelegation&>);

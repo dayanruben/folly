@@ -227,9 +227,9 @@ class TaskPromise final : public TaskPromiseCrtpBase<TaskPromise<T>, T> {
 
   template <typename U>
   static constexpr bool IsDeprecatedTryReturn =
-      std::is_same_v<remove_cvref_t<U>, Try<StorageType>> ||
+      std::is_same_v<std::remove_cvref_t<U>, Try<StorageType>> ||
       (std::is_same_v<StorageType, Unit> &&
-       std::is_same_v<remove_cvref_t<U>, Try<void>>);
+       std::is_same_v<std::remove_cvref_t<U>, Try<void>>);
 
   TaskPromise() noexcept = default;
 

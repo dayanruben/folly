@@ -204,7 +204,7 @@ TEST_F(MergeTest, SequencesOfLValueReferences) {
   }());
 }
 
-template <typename Ref, typename Value = folly::remove_cvref_t<Ref>>
+template <typename Ref, typename Value = std::remove_cvref_t<Ref>>
 folly::coro::AsyncGenerator<Ref, Value> neverStream() {
   folly::coro::Baton baton;
   folly::CancellationCallback cb{

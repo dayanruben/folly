@@ -891,7 +891,7 @@ TryAwaitable : public CommutativeWrapperAwaitable<TryAwaitable, T> {
 
   template <typename Self, typename T2 = like_t<Self, T>>
     requires(
-        std::is_same_v<remove_cvref_t<Self>, TryAwaitable> &&
+        std::is_same_v<std::remove_cvref_t<Self>, TryAwaitable> &&
         is_awaitable_v<T2>)
   friend TryAwaiter<T2> operator co_await(Self&& self) {
     return TryAwaiter<T2>{static_cast<Self&&>(self).inner_};
@@ -909,9 +909,9 @@ TryAwaitable : public CommutativeWrapperAwaitable<TryAwaitable, T> {
 /// why uses of it should not be replaced with `try` / `catch`.
 template <typename Awaitable>
   requires(!folly::ext::must_use_immediately_v<Awaitable>)
-detail::TryAwaitable<remove_cvref_t<Awaitable>> co_awaitTry(
+detail::TryAwaitable<std::remove_cvref_t<Awaitable>> co_awaitTry(
     [[FOLLY_ATTR_CLANG_CORO_AWAIT_ELIDABLE_ARGUMENT]] Awaitable&& awaitable) {
-  return detail::TryAwaitable<remove_cvref_t<Awaitable>>{
+  return detail::TryAwaitable<std::remove_cvref_t<Awaitable>>{
       static_cast<Awaitable&&>(awaitable)};
 }
 /// co_awaitTry

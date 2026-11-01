@@ -175,14 +175,14 @@ class not_null_base : protected guaranteed_not_null_provider {
   template <
       typename U,
       typename = std::enable_if_t<detail::check_constraint_if_not<
-          std::is_same_v<PtrT, folly::remove_cvref_t<U>>,
+          std::is_same_v<PtrT, std::remove_cvref_t<U>>,
           detail::is_not_null_castable>::template apply<PtrT, U>>>
   operator U() const& noexcept(std::is_nothrow_constructible_v<U, const PtrT&>);
 
   template <
       typename U,
       typename = std::enable_if_t<detail::check_constraint_if_not<
-          std::is_same_v<PtrT, folly::remove_cvref_t<U>>,
+          std::is_same_v<PtrT, std::remove_cvref_t<U>>,
           detail::is_not_null_move_castable>::template apply<PtrT, U>>>
   operator U() && noexcept(std::is_nothrow_constructible_v<U, PtrT&&>);
 

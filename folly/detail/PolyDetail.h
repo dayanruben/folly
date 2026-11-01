@@ -213,13 +213,13 @@ struct PolyRef;
 struct PolyAccess;
 
 template <class T>
-using IsPoly = IsInstanceOf<remove_cvref_t<T>, Poly>;
+using IsPoly = IsInstanceOf<std::remove_cvref_t<T>, Poly>;
 
 // Given an interface I and a concrete type T that satisfies the interface
 // I, create a list of member function bindings from members of T to members
 // of I.
 template <class I, class T>
-using MembersOf = typename I::template Members<remove_cvref_t<T>>;
+using MembersOf = typename I::template Members<std::remove_cvref_t<T>>;
 
 // Given an interface I and a base type T, create a type that implements
 // the interface I in terms of the capabilities of T.
@@ -317,13 +317,13 @@ struct Data {
 
 template <class U, class I>
 using Arg =
-    If<std::is_same<remove_cvref_t<U>, Archetype<I>>::value,
+    If<std::is_same<std::remove_cvref_t<U>, Archetype<I>>::value,
        Poly<AddCvrefOf<I, U const&>>,
        U>;
 
 template <class U, class I>
 using Ret =
-    If<std::is_same<remove_cvref_t<U>, Archetype<I>>::value,
+    If<std::is_same<std::remove_cvref_t<U>, Archetype<I>>::value,
        AddCvrefOf<Poly<I>, U>,
        U>;
 
@@ -434,10 +434,10 @@ template <class Arg, class U>
 decltype(auto) convert(U&& u) {
   return detail::if_constexpr(
       StrictConjunction<
-          IsPolyRef<remove_cvref_t<U>>,
+          IsPolyRef<std::remove_cvref_t<U>>,
           std::negation<std::is_convertible<U, Arg>>>(),
       [&](auto id) -> decltype(auto) {
-        return poly_cast<remove_cvref_t<Arg>>(id(u).get());
+        return poly_cast<std::remove_cvref_t<Arg>>(id(u).get());
       },
       [&](auto id) -> U&& { return static_cast<U&&>(id(u)); });
 }
@@ -550,7 +550,7 @@ void* execOnHeap(Op op, Data* from, void* to) {
       }
       throw_exception<BadPolyCast>();
     case Op::eRefr:
-      return vtableForRef<I, remove_cvref_t<T>>(
+      return vtableForRef<I, std::remove_cvref_t<T>>(
           static_cast<RefType>(reinterpret_cast<std::uintptr_t>(to)));
   }
   return nullptr;
@@ -581,7 +581,7 @@ void* execOnHeap(Op op, Data* from, void* to) {
       }
       throw_exception<BadPolyCast>();
     case Op::eRefr:
-      return vtableForRef<I, remove_cvref_t<T>>(
+      return vtableForRef<I, std::remove_cvref_t<T>>(
           static_cast<RefType>(reinterpret_cast<std::uintptr_t>(to)));
   }
   return nullptr;
@@ -612,7 +612,7 @@ void* execInSitu(Op op, Data* from, void* to) {
       }
       throw_exception<BadPolyCast>();
     case Op::eRefr:
-      return vtableForRef<I, remove_cvref_t<T>>(
+      return vtableForRef<I, std::remove_cvref_t<T>>(
           static_cast<RefType>(reinterpret_cast<std::uintptr_t>(to)));
   }
   return nullptr;
@@ -700,10 +700,11 @@ struct PolyAccess {
   }
 
   template <class Poly>
-  using Iface = typename remove_cvref_t<Poly>::_polyInterface_;
+  using Iface = typename std::remove_cvref_t<Poly>::_polyInterface_;
 
   template <class Node, class Tfx = MetaIdentity>
-  static typename remove_cvref_t<Node>::template _polySelf_<Node, Tfx> self_();
+  static typename std::remove_cvref_t<Node>::template _polySelf_<Node, Tfx>
+  self_();
 
   template <class T, class Poly, class I = Iface<Poly>>
   static decltype(auto) cast(Poly&& _this) {
@@ -727,7 +728,7 @@ struct PolyAccess {
   }
 
   template <class I>
-  static VTable<remove_cvref_t<I>> const* vtable(
+  static VTable<std::remove_cvref_t<I>> const* vtable(
       PolyRoot<I> const& _this) noexcept {
     return _this.vptr_;
   }
@@ -795,7 +796,7 @@ struct PolyRoot : private PolyBase, private Data {
 
 template <class I>
 using PolyImpl = TypeFold<
-    InclusiveSubsumptionsOf<remove_cvref_t<I>>,
+    InclusiveSubsumptionsOf<std::remove_cvref_t<I>>,
     PolyRoot<I>,
     MakePolyNode>;
 
@@ -874,7 +875,7 @@ struct ModelsInterfaceFalse0_<true> {
 };
 template <typename... T>
 using ModelsInterfaceFalse_ = typename ModelsInterfaceFalse0_<(
-    std::is_function_v<remove_cvref_t<T>> || ...)>::template apply<T...>;
+    std::is_function_v<std::remove_cvref_t<T>> || ...)>::template apply<T...>;
 
 template <class T, class I, class = void>
 struct ModelsInterface2_ : ModelsInterfaceFalse_<T, I> {};

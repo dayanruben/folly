@@ -30,7 +30,7 @@ namespace detail {
 
 template <typename T>
 struct atomic_ref_base {
-  using value_type = remove_cvref_t<T>;
+  using value_type = std::remove_cvref_t<T>;
 
  private:
   using atomic_reference = copy_cvref_t<T, std::atomic<value_type>>&;
@@ -167,7 +167,7 @@ struct atomic_ref_integral_base : atomic_ref_base<T> {
   }
 };
 
-template <typename T, typename TD = remove_cvref_t<T>>
+template <typename T, typename TD = std::remove_cvref_t<T>>
 using atomic_ref_select = conditional_t<
     is_non_bool_integral_v<TD>,
     atomic_ref_integral_base<T>,
@@ -202,7 +202,7 @@ struct make_atomic_ref_t {
   template <
       typename T,
       typename...,
-      typename TD = remove_cvref_t<T>,
+      typename TD = std::remove_cvref_t<T>,
       typename ATD = std::atomic<TD>>
     requires(
         std::is_trivially_copyable_v<TD> && //

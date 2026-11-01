@@ -277,7 +277,7 @@ class manual_safe_callable_t {
 template <
     safe_alias Safety = safe_alias::maybe_value,
     typename Fn,
-    typename UncvrefFn = remove_cvref_t<Fn>>
+    typename UncvrefFn = std::remove_cvref_t<Fn>>
 manual_safe_callable_t<Safety, UncvrefFn> manual_safe_callable(Fn&& fn) {
   return manual_safe_callable_t<Safety, UncvrefFn>{static_cast<Fn&&>(fn)};
 }

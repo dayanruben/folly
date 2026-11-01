@@ -48,7 +48,7 @@ struct decay_rvalue_reference {
 };
 
 template <typename T>
-struct decay_rvalue_reference<T&&> : remove_cvref<T> {};
+struct decay_rvalue_reference<T&&> : std::remove_cvref<T> {};
 
 template <typename T>
 using decay_rvalue_reference_t = typename decay_rvalue_reference<T>::type;
