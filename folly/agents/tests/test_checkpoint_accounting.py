@@ -349,8 +349,10 @@ class CheckpointAccountingTest(unittest.TestCase):
                 [record["changed_word_percent"] for record in records],
                 [None, 100.0, 100.0, 50.0],
             )
-            self.assertEqual(records[2]["author_tokens"], usage(200, 10))
-            self.assertEqual(records[3]["author_tokens"], usage(200, 15))
+            self.assertEqual(
+                [record["author_tokens"] for record in records],
+                [usage(100, 10), usage(150, 10), usage(200, 10), usage(200, 15)],
+            )
             self.assertEqual(
                 [record["reviewer_tokens"] for record in records],
                 [
