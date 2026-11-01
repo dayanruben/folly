@@ -134,6 +134,9 @@ inline std::string SetCommandLineOption(
   return "";
 }
 
+inline void ParseCommandLineFlags(
+    int* /* argc */, char*** /* argv */, bool /* remove_flags */) {}
+
 } // namespace gflags
 
 #endif

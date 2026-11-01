@@ -20,7 +20,7 @@
 
 #include <glog/logging.h>
 
-DEFINE_string(
+FOLLY_GFLAGS_DEFINE_string(
     coding_test_utils_instructions,
     "",
     "If non empty, forces the instruction set. Choices: Default, Nehalem, Haswell");
