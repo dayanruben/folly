@@ -6,6 +6,10 @@ colleague before showing that diff. Assume normal technical background, not
 knowledge of this code or its discussion. Select details for understanding the
 change, not for teaching the reader to use the new code or carry out its rules.
 
+Before drafting or revising, compare passages describing the diff's changes with
+reading the relevant part of the diff directly. Omit or cut any such passage
+that does not materially reduce the reader's effort.
+
 Keep technical detail when it explains an important choice; leave routine
 mechanics in the diff. Choose paragraphs or lists to make the explanation clear,
 not to enumerate everything changed. A no-op or new capability may be the best
