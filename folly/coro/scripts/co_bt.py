@@ -665,6 +665,7 @@ if debugger_type is None:  # noqa: C901
             @staticmethod
             def parse_and_eval(expr: str) -> DebuggerValue:
                 value = LldbValue(
+                    # pyrefly: ignore [missing-attribute]
                     LldbValue.exe_ctx.GetTarget().CreateValueFromExpression(
                         f"{LldbValue.next_name_num}", expr
                     )
@@ -675,6 +676,7 @@ if debugger_type is None:  # noqa: C901
             @staticmethod
             def execute(expr: str) -> str:
                 return_obj = lldb.SBCommandReturnObject()
+                # pyrefly: ignore [missing-attribute]
                 LldbValue.exe_ctx.GetTarget().GetDebugger().GetCommandInterpreter().HandleCommand(
                     expr, LldbValue.exe_ctx, return_obj, False
                 )
@@ -703,6 +705,7 @@ if debugger_type is None:  # noqa: C901
                 # If we are a live process, try to call this helper to get
                 # the pthread struct pointer. Note that this may not work
                 # on core dumps or optimized builds.
+                # pyrefly: ignore [missing-attribute]
                 result = LldbValue.exe_ctx.GetFrame().EvaluateExpression(
                     "(struct pthread*)pthread_self()"
                 )
@@ -712,21 +715,25 @@ if debugger_type is None:  # noqa: C901
 
             @staticmethod
             def get_register(register: str) -> DebuggerValue:
+                # pyrefly: ignore [missing-attribute]
                 return LldbValue(LldbValue.exe_ctx.GetFrame().FindRegister(register))
 
             def get_field(self, n: int) -> DebuggerValue:
                 # Linux x86_64 size of a pointer
                 ptr_size = 8
                 ptr_type = (
+                    # pyrefly: ignore [missing-attribute]
                     LldbValue.exe_ctx.GetTarget()
                     .FindFirstType("uintptr_t")
                     .GetPointerType()
                 )
                 address = lldb.SBAddress(
                     self.int_value() + ptr_size * n,
+                    # pyrefly: ignore [missing-attribute]
                     LldbValue.exe_ctx.GetTarget(),
                 )
                 value = LldbValue(
+                    # pyrefly: ignore [missing-attribute]
                     LldbValue.exe_ctx.GetTarget().CreateValueFromAddress(
                         f"{LldbValue.next_name_num}", address, ptr_type
                     )
@@ -747,8 +754,12 @@ if debugger_type is None:  # noqa: C901
             # with conditional imports
             def _get_symbol_context(self) -> "lldb.SBSymbolContext":
                 address = lldb.SBAddress(
-                    self.int_value(), LldbValue.exe_ctx.GetTarget()
+                    # pyrefly: ignore [missing-attribute]
+                    self.int_value(),
+                    # pyrefly: ignore [missing-attribute]
+                    LldbValue.exe_ctx.GetTarget(),
                 )
+                # pyrefly: ignore [missing-attribute]
                 return LldbValue.exe_ctx.GetTarget().ResolveSymbolContextForAddress(
                     address, lldb.eSymbolContextEverything
                 )
