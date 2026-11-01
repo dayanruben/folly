@@ -1,12 +1,10 @@
-load("@fbcode_macros//build_defs:build_file_migration.bzl", "fbcode_target")
-load("@fbcode_macros//build_defs:cpp_benchmark.bzl", "cpp_benchmark")
-load("@fbcode_macros//build_defs:cpp_binary.bzl", "cpp_binary")
-load("@fbcode_macros//build_defs:cpp_library.bzl", "cpp_library")
-load("@fbcode_macros//build_defs:cpp_unittest.bzl", "cpp_unittest")
 load("@fbcode_macros//build_defs:custom_unittest.bzl", "custom_unittest")
 load("@fbcode_macros//build_defs:export_files.bzl", "export_file")
 load("@fbcode_macros//build_defs:native_rules.bzl", "buck_sh_binary")
 load("@fbcode_macros//build_defs:python_unittest.bzl", "python_unittest")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_benchmark.bzl", "fb_dirsync_cpp_benchmark")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_binary.bzl", "fb_dirsync_cpp_binary")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_library.bzl", "fb_dirsync_cpp_library")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_unittest.bzl", "fb_dirsync_cpp_unittest")
 load(":validate_folly_symbolizer.bzl", "SPLIT_DWARF_FLAGS", "customized_unittest", "validate_folly_symbolizer", "validate_symbolizer_dwp")
 
@@ -18,8 +16,7 @@ WINDOWS_SIGNAL_HANDLER_TEST_DEPS = [
     "//folly/portability:windows",
 ]
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "crash",
     srcs = ["Crash.cpp"],
     compiler_specific_flags = {
@@ -27,13 +24,13 @@ fbcode_target(
             "-gdwarf-aranges",
         ],
     },
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:symbolizer",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "dwarf_benchmark",
     srcs = ["DwarfBenchmark.cpp"],
     compiler_specific_flags = {
@@ -41,7 +38,10 @@ fbcode_target(
             "-g",
         ],
     },
-    target_compatible_with = ["fbcode//opensource/macros:broken-in-oss"],
+    target_compatible_with = [
+        "fbcode//opensource/macros:broken-in-oss",
+        "ovr_config//runtime:fbcode",
+    ],
     deps = [
         ":symbolizer_test_utils_dwarf4_dwarf32_aaranges",
         "//folly:benchmark",
@@ -54,8 +54,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "small_sigaltstack_crash",
     srcs = ["SmallSigAltStackCrash.cpp"],
     compiler_specific_flags = {
@@ -63,35 +62,38 @@ fbcode_target(
             "-gdwarf-aranges",
         ],
     },
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:symbolizer",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "elf_cache_comparison",
     srcs = ["SignalSafeElfCacheComparison.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:elf_cache",
         "//folly/memory:reentrant_allocator",
     ],
 )
 
-fbcode_target(
-    _kind = python_unittest,
+python_unittest(
     name = "elf_cache_comparison_binding_test",
     srcs = ["elf_cache_comparison_binding_test.py"],
     env = {
         "ELF_CACHE_COMPARISON": "$(location :elf_cache_comparison)",
     },
-    target_compatible_with = ["ovr_config//os:linux"],
+    target_compatible_with = [
+        "ovr_config//os:linux",
+        "ovr_config//runtime:fbcode",
+    ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "symbolized_frame_test",
     srcs = ["SymbolizedFrameTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly/debugging/symbolizer:symbolized_frame",
@@ -99,27 +101,26 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "symbol_cache_test",
     srcs = ["SymbolCacheTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:symbol_cache",
         "//folly/portability:gtest",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "simple_elf",
     srcs = ["SimpleElf.cpp"],
     linker_flags = [
         "--build-id=0xdeadbeef",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "elf_test",
     srcs = ["ElfTest.cpp"],
     # Do NOT move segments to a seperate helper .so lib because
@@ -129,6 +130,7 @@ fbcode_target(
         "test-xindex.o",
         ":simple_elf",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/googletest:gmock",
         "//folly:conv",
@@ -144,19 +146,19 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = buck_sh_binary,
+buck_sh_binary(
     name = "gnu_debuglink_test.sh",
     main = "gnu_debuglink_test.sh",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
 )
 
-fbcode_target(
-    _kind = custom_unittest,
+custom_unittest(
     name = "gnu_debuglink_test",
     command = [
         "$(exe :gnu_debuglink_test.sh)",
         "$(location :crash)",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     type = "json",
     deps = [
         ":crash",
@@ -177,10 +179,10 @@ fbcode_target(
 #     ],
 # )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "line_reader_test",
     srcs = ["LineReaderTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly:file_util",
@@ -190,12 +192,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "signal_handler_test",
     srcs = ["SignalHandlerTest.cpp"],
     headers = ["SignalHandlerTest.h"],
     labels = ["broken-test"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly:c_portability",
@@ -221,10 +223,10 @@ fb_dirsync_cpp_unittest(
     }),
 )
 
-fbcode_target(
-    _kind = cpp_benchmark,
+fb_dirsync_cpp_benchmark(
     name = "stack_trace_benchmark",
     srcs = ["StackTraceBenchmark.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly/debugging/symbolizer:stack_trace",
@@ -232,11 +234,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "stack_trace_size_limit_test",
     srcs = ["StackTraceSizeLimitTest.cpp"],
     labels = ["oss-broken"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:stack_trace",
         "//folly/debugging/symbolizer:symbolizer",
@@ -247,11 +249,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "stack_trace_test",
     srcs = ["StackTraceTest.cpp"],
     labels = ["oss-broken"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/boost:boost_regex",
         "fbsource//third-party/glog:glog",
@@ -271,8 +273,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = customized_unittest,
+customized_unittest(
     available_dwarf_sizes = [
         32,
         64,
@@ -286,8 +287,7 @@ fbcode_target(
     extra_compiler_flags = [],
 )
 
-fbcode_target(
-    _kind = customized_unittest,
+customized_unittest(
     available_dwarf_sizes = [
         32,
     ],
@@ -299,26 +299,24 @@ fbcode_target(
     extra_compiler_flags = ["-gdwarf-5"],
 )
 
-fbcode_target(
-    _kind = buck_sh_binary,
+buck_sh_binary(
     name = "compare-addr2line.sh",
     main = "compare-addr2line.sh",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
 )
 
-fbcode_target(
-    _kind = validate_folly_symbolizer,
+validate_folly_symbolizer(
     name = "compare-addr2line-symbolizer_test_dwarf4",
     binary = ":symbolizer_test_dwarf4_dwarf32_aaranges",
 )
 
-fbcode_target(
-    _kind = buck_sh_binary,
+buck_sh_binary(
     name = "symbolizer_dwp_compability.sh",
     main = "symbolizer_dwp_compability.sh",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
 )
 
-fbcode_target(
-    _kind = validate_symbolizer_dwp,
+validate_symbolizer_dwp(
     name = "validate_symbolizer_dwp_dwarf4_dwarf32_single_inlining_aaranges",
     binary = ":symbolizer_test_dwarf4_dwarf32_single_inlining_aaranges",
     # The test objects force -gdwarf-4 while dependencies follow the ambient
@@ -334,8 +332,7 @@ fbcode_target(
     modifiers = ["ovr_config//build_mode/constraints:debug_style[split-dwarf-single]"],
 )
 
-fbcode_target(
-    _kind = validate_symbolizer_dwp,
+validate_symbolizer_dwp(
     name = "validate_symbolizer_dwp_dwarf5_dwarf32_single_inlining_aaranges",
     # we cannot mix split-dwarf-4 with split-dwarf-5. fbcode enables split-dwarf4 by default
     # unless -c fbcode.split-dwarf5=True is enabled, so let's disable split-dwarf in the test
@@ -345,8 +342,7 @@ fbcode_target(
 
 export_file(name = "eh_sdata8_large.lds")
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "stack_trace_large_test",
     srcs = ["StackTraceLargeTest.cpp"],
     linker_flags = [
@@ -357,6 +353,7 @@ fbcode_target(
         # and overflows
         "ovr_config//build_mode:sanitizer_type[no-san]",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly/debugging/symbolizer:elf",
@@ -366,8 +363,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_benchmark,
+fb_dirsync_cpp_benchmark(
     name = "stack_trace_large_benchmark",
     srcs = ["StackTraceLargeBenchmark.cpp"],
     linker_flags = [
@@ -378,6 +374,7 @@ fbcode_target(
         # and overflows
         "ovr_config//build_mode:sanitizer_type[no-san]",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly:benchmark",
@@ -386,13 +383,13 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "frame_pointer_unwinder_test",
     srcs = ["FramePointerUnwinderTest.cpp"],
     env = {
         "FOLLY_FB_UNWINDER_ENABLED": "1",
     },
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/symbolizer:stack_trace",
         "//folly/facebook/fp_unwinder:fp_unwinder",  # @manual
@@ -403,8 +400,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_library,
+fb_dirsync_cpp_library(
     name = "omit_frame_pointer_func",
     srcs = ["OmitFramePointerFunc.cpp"],
     headers = ["OmitFramePointerFunc.h"],
@@ -415,16 +411,17 @@ fbcode_target(
     private_linker_flags = [
         "--emit-relocs",
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/lang:hint",
     ],
     exported_deps = ["//folly:c_portability"],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "omit_frame_pointer_test",
     srcs = ["OmitFramePointerTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":omit_frame_pointer_func",
         "//folly/debugging/symbolizer:stack_trace",
@@ -435,10 +432,10 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_benchmark,
+fb_dirsync_cpp_benchmark(
     name = "frame_pointer_unwinder_benchmark",
     srcs = ["FramePointerUnwinderBenchmark.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly:c_portability",

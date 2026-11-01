@@ -1,7 +1,8 @@
-load("@fbcode_macros//build_defs:cpp_library.bzl", "cpp_library")
-load("@fbcode_macros//build_defs:cpp_unittest.bzl", "cpp_unittest")
 load("@fbcode_macros//build_defs:custom_unittest.bzl", "custom_unittest")
 load("@fbcode_macros//build_defs/lib:split_dwarf.bzl", "split_dwarf")
+load("@fbsource//tools/build_defs:cell_defs.bzl", "get_fbsource_cell")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_library.bzl", "fb_dirsync_cpp_library")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_unittest.bzl", "fb_dirsync_cpp_unittest")
 load("@fbsource//tools/target_determinator/macros:ci.bzl", "ci")
 
 SPLIT_DWARF_FLAGS = {
@@ -19,6 +20,8 @@ SPLIT_DWARF_FLAGS = {
         "-fno-split-dwarf-inlining",
     ],
 }
+
+_FOLLY_ADDR2LINE = "//{}/debugging/symbolizer/tool:folly-addr2line".format("folly" if get_fbsource_cell() == "fbcode" else "xplat/folly")
 
 def _dwarf_size_flag(size):
     if size == 32:
@@ -38,7 +41,7 @@ def customized_unittest(available_dwarf_versions = [], avilable_split_dwarf_keys
                 # buck2 doesn't support split version yet.
                 if split_dwarf_option == "none" or split_dwarf_option == "single_inlining":
                     for use_aaranges in [False, True]:
-                        cpp_library(
+                        fb_dirsync_cpp_library(
                             name = "symbolizer_test_utils_"
                             + dwarf_version
                             + "_dwarf{}".format(dwarf_size)
@@ -62,10 +65,13 @@ def customized_unittest(available_dwarf_versions = [], avilable_split_dwarf_keys
                             private_linker_flags = [
                                 "--emit-relocs",  # makes linker ignore `--strip-debug-*` flags
                             ],
-                            target_compatible_with = ["fbcode//opensource/macros:broken-in-oss"],
+                            target_compatible_with = [
+                                "fbcode//opensource/macros:broken-in-oss",
+                                "ovr_config//runtime:fbcode",
+                            ],
                             modifiers = split_dwarf.modifiers(separate = False) if split_dwarf_option == "single_inlining" else [],
                         )
-                        cpp_unittest(
+                        fb_dirsync_cpp_unittest(
                             name = "symbolizer_test_"
                             + dwarf_version
                             + "_dwarf{}".format(dwarf_size)
@@ -87,7 +93,10 @@ def customized_unittest(available_dwarf_versions = [], avilable_split_dwarf_keys
                                 "--emit-relocs",  # makes linker ignore `--strip-debug-*` flags
                             ],
                             supports_static_listing = True,
-                            target_compatible_with = ["fbcode//opensource/macros:broken-in-oss"],
+                            target_compatible_with = [
+                                "fbcode//opensource/macros:broken-in-oss",
+                                "ovr_config//runtime:fbcode",
+                            ],
                             modifiers = split_dwarf.modifiers(separate = False) if split_dwarf_option == "single_inlining" else [],
                             deps = [
                                 ":symbolizer_test_utils_"
@@ -117,12 +126,13 @@ def validate_folly_symbolizer(name, binary):
     custom_unittest(
         name = name,
         command = [
-            "$(exe //folly/debugging/symbolizer/test:compare-addr2line.sh)",
-            "$(location //folly/debugging/symbolizer/tool:folly-addr2line)",
+            "$(exe :compare-addr2line.sh)",
+            "$(location {})".format(_FOLLY_ADDR2LINE),
             "$(location fbsource//third-party/llvm-project:llvm-addr2line-binary)",
             "$(location {})".format(binary),
         ],
         type = "simple",
+        target_compatible_with = ["ovr_config//runtime:fbcode"],
     )
 
 def validate_symbolizer_dwp(name, binary, mode = "fbcode//mode/opt", modifiers = [], drop_modes = []):
@@ -138,7 +148,7 @@ def validate_symbolizer_dwp(name, binary, mode = "fbcode//mode/opt", modifiers =
     custom_unittest(
         name = name,
         command = [
-            "$(exe //folly/debugging/symbolizer/test:symbolizer_dwp_compability.sh)",
+            "$(exe :symbolizer_dwp_compability.sh)",
             "$(location {})".format(binary),
             "$(location {}[dwp])".format(binary),
         ],
@@ -148,5 +158,8 @@ def validate_symbolizer_dwp(name, binary, mode = "fbcode//mode/opt", modifiers =
         # Only test in opt mode.
         # In dev mode, the test still depends on the shared libraries except
         # binary + dwp file.
-        target_compatible_with = ["ovr_config//build_mode/constraints:opt"],
+        target_compatible_with = [
+            "ovr_config//build_mode/constraints:opt",
+            "ovr_config//runtime:fbcode",
+        ],
     )

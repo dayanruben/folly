@@ -320,11 +320,14 @@ def folly_xplat_cxx_binary(
         fail("cxx_sanitizer_runtime_provider = 'host' requires dlopen_enabled")
 
     extra_kwargs = {"oncall": oncall} if oncall != None else {}
-    if "target_compatible_with" in kwargs:
-        extra_kwargs["target_compatible_with"] = kwargs["target_compatible_with"]
+    for key in ("compiler_flags", "linker_flags", "target_compatible_with"):
+        if key in kwargs:
+            extra_kwargs[key] = kwargs[key]
+    clang_flags = kwargs.get("compiler_specific_flags", {}).get("clang")
+    if clang_flags:
+        extra_kwargs["compiler_flags"] = extra_kwargs.get("compiler_flags", []) + clang_flags
 
     if dlopen_enabled:
-        extra_kwargs["linker_flags"] = kwargs.get("linker_flags", [])
         extra_kwargs["link_style"] = kwargs.get("link_style")
 
     fb_xplat_cxx_binary(
