@@ -46,12 +46,55 @@ TEST_F(ScopedEventBaseThreadTest, event_base_keepalive) {
 
   ASSERT_TRUE(eventBase);
   EXPECT_EQ(sebt.getEventBase(), eventBase.get());
+  EXPECT_EQ(sebt.getEventBaseKeepAlive().get(), eventBase.get());
+  const auto& constThread = sebt;
+  auto constEventBase = constThread.getEventBaseKeepAlive();
+  ASSERT_TRUE(constEventBase);
+  EXPECT_EQ(constThread.getEventBase(), constEventBase.get());
+  EXPECT_EQ(eventBase.get(), constEventBase.get());
   EXPECT_EQ(
       eventBase.get(),
       static_cast<IOExecutor&>(*eventBase).getEventBaseKeepAlive().get());
   bool ran = false;
   eventBase->runInEventBaseThreadAndWait([&] { ran = true; });
   EXPECT_TRUE(ran);
+}
+
+TEST_F(ScopedEventBaseThreadTest, const_event_base_keepalive_drain) {
+  Baton<> started, destructionStarted, destroyed, joined, ran;
+  Executor::KeepAlive<EventBase> eventBase;
+  thread::id eventBaseThreadId;
+  thread::id destructionThreadId;
+
+  thread owner([&] {
+    {
+      ScopedEventBaseThread sebt;
+      const auto& constThread = sebt;
+      eventBase = constThread.getEventBaseKeepAlive();
+      eventBaseThreadId = constThread.getThreadId();
+      eventBase->runOnDestructionStart([&] { destructionStarted.post(); });
+      eventBase->runOnDestruction([&] {
+        destructionThreadId = this_thread::get_id();
+        destroyed.post();
+      });
+      started.post();
+    }
+    joined.post();
+  });
+
+  started.wait();
+  destructionStarted.wait();
+  EXPECT_TRUE(eventBase);
+  EXPECT_FALSE(destroyed.ready());
+  EXPECT_FALSE(joined.ready());
+  eventBase->runInEventBaseThread([&] { ran.post(); });
+  EXPECT_TRUE(ran.try_wait_for(seconds(5)));
+  eventBase.reset();
+  EXPECT_FALSE(eventBase);
+  owner.join();
+  EXPECT_TRUE(destroyed.ready());
+  EXPECT_TRUE(joined.ready());
+  EXPECT_EQ(eventBaseThreadId, destructionThreadId);
 }
 
 TEST_F(ScopedEventBaseThreadTest, named_example) {

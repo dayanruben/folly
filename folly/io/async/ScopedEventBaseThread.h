@@ -81,8 +81,13 @@ class ScopedEventBaseThread : public IOExecutor, public SequencedExecutor {
 
   EventBase* getEventBase() override { return &eb_; }
 
-  Executor::KeepAlive<EventBase> getEventBaseKeepAlive() override {
+  Executor::KeepAlive<EventBase> getEventBaseKeepAlive() const {
     return getKeepAliveToken(&eb_);
+  }
+
+  Executor::KeepAlive<EventBase> getEventBaseKeepAlive() override {
+    return static_cast<const ScopedEventBaseThread&>(*this)
+        .getEventBaseKeepAlive();
   }
 
   /**
