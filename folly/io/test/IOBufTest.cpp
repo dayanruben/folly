@@ -1857,6 +1857,21 @@ TEST(IOBuf, AppendTo) {
   testAppendTo(std::vector<unsigned char>{});
 }
 
+TEST(IOBuf, AppendToBinaryData) {
+  using folly::range;
+
+  const unsigned char kData[] = {0x00, 0x7f, 0x80, 0xff, 'x'};
+  auto buf = IOBuf::wrapBuffer(kData, 2);
+  buf->appendToChain(IOBuf::wrapBuffer(kData + 2, sizeof(kData) - 2));
+
+  const StringPiece kExpected{ByteRange{kData, sizeof(kData)}};
+  EXPECT_EQ(StringPiece(range(buf->to<std::string>())), kExpected);
+  EXPECT_EQ(StringPiece(range(buf->to<fbstring>())), kExpected);
+  EXPECT_EQ(StringPiece(range(buf->to<std::vector<char>>())), kExpected);
+  EXPECT_EQ(
+      StringPiece(range(buf->to<std::vector<unsigned char>>())), kExpected);
+}
+
 TEST(IOBuf, FromStringView) {
   auto literalHelloBuffer = IOBuf::copyBuffer("Hello");
   std::string hello("Hello");

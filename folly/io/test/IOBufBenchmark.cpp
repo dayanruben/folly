@@ -147,6 +147,27 @@ BENCHMARK_NAMED_PARAM(createAndDestroyMulti, 16384, 16384)
 BENCHMARK_NAMED_PARAM(createAndDestroyMulti, 17000, 17000)
 BENCHMARK_DRAW_LINE();
 
+static void toStdString(size_t iters, size_t numBufs, size_t bufSize) {
+  folly::BenchmarkSuspender suspender;
+  auto chain = IOBuf::copyBuffer(std::string(bufSize, 'x'));
+  for (size_t i = 1; i < numBufs; ++i) {
+    chain->appendToChain(IOBuf::copyBuffer(std::string(bufSize, 'x')));
+  }
+  suspender.dismissing([&] {
+    while (iters--) {
+      folly::doNotOptimizeAway(chain->to<std::string>());
+    }
+  });
+}
+
+BENCHMARK_NAMED_PARAM(toStdString, 1x64, 1, 64)
+BENCHMARK_NAMED_PARAM(toStdString, 1x1024, 1, 1024)
+BENCHMARK_NAMED_PARAM(toStdString, 4x1024, 4, 1024)
+BENCHMARK_NAMED_PARAM(toStdString, 1x16384, 1, 16384)
+BENCHMARK_NAMED_PARAM(toStdString, 4x16384, 4, 16384)
+BENCHMARK_NAMED_PARAM(toStdString, 1x262144, 1, 262144)
+BENCHMARK_DRAW_LINE();
+
 /**
  * folly/io/test:iobuf_benchmark -- --bm_min_iters 100000
  *  ============================================================================
@@ -174,6 +195,13 @@ BENCHMARK_DRAW_LINE();
  *  createAndDestroyMulti(10240)                                83.83us   11.93K
  *  createAndDestroyMulti(16384)                                93.03us   10.75K
  *  createAndDestroyMulti(17000)                                93.85us   10.66K
+ *  ----------------------------------------------------------------------------
+ *  toStdString(1x64)                                          17.94ns    55.75M
+ *  toStdString(1x1024)                                        27.64ns    36.18M
+ *  toStdString(4x1024)                                        78.95ns    12.67M
+ *  toStdString(1x16384)                                      169.79ns     5.89M
+ *  toStdString(4x16384)                                        1.18us   849.30K
+ *  toStdString(1x262144)                                       3.13us   319.89K
  *  ----------------------------------------------------------------------------
  *  ============================================================================
  */

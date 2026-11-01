@@ -2442,8 +2442,12 @@ void IOBuf::appendTo(Container& container) const {
        std::is_same<typename Container::value_type, unsigned char>::value),
       "Unsupported value type");
   container.reserve(container.size() + computeChainDataLength());
+  using Ptr = const typename Container::value_type*;
   for (auto data : *this) {
-    container.insert(container.end(), data.begin(), data.end());
+    container.insert(
+        container.end(),
+        reinterpret_cast<Ptr>(data.begin()),
+        reinterpret_cast<Ptr>(data.end()));
   }
 }
 
