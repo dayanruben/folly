@@ -66,8 +66,8 @@ class F14BasicSet
 
   template <typename K>
   using IsIter = std::disjunction<
-      std::is_same<iterator, remove_cvref_t<K>>,
-      std::is_same<const_iterator, remove_cvref_t<K>>>;
+      std::is_same<iterator, std::remove_cvref_t<K>>,
+      std::is_same<const_iterator, std::remove_cvref_t<K>>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousErase = std::enable_if_t<
@@ -122,7 +122,8 @@ class F14BasicSet
     return folly::detail::callWithConstructedKey<key_type, UsableAsKey>(
         a,
         [&](auto const&, auto&& key) {
-          if (!std::is_same<key_type, remove_cvref_t<decltype(key)>>::value) {
+          if (!std::is_same<key_type, std::remove_cvref_t<decltype(key)>>::
+                  value) {
             // this is a heterogeneous emplace
             auto it = find(key);
             if (it != this->end()) {

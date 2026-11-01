@@ -79,7 +79,7 @@ struct TemporaryEmplaceKey {
 // callWithExtractedKey supports heterogeneous lookup with the UsableAsKey
 // template parameter.  If a single key argument of type K is found in
 // args... then it will be passed directly to f if it is either KeyType or
-// if UsableAsKey<remove_cvref_t<K>>::value is true.  If you don't care
+// if UsableAsKey<std::remove_cvref_t<K>>::value is true.  If you don't care
 // about heterogeneous lookup you can just pass a single-arg template
 // that extends std::false_type.
 
@@ -142,8 +142,8 @@ template <
     typename Arg1,
     typename... Args2,
     std::enable_if_t<
-        std::is_same<remove_cvref_t<Arg1>, KeyType>::value ||
-            UsableAsKey<remove_cvref_t<Arg1>>::value,
+        std::is_same<std::remove_cvref_t<Arg1>, KeyType>::value ||
+            UsableAsKey<std::remove_cvref_t<Arg1>>::value,
         int> = 0>
 auto callWithExtractedKey(
     Alloc& /*unused*/,
@@ -263,8 +263,8 @@ template <
     typename Func,
     typename Arg,
     std::enable_if_t<
-        std::is_same<remove_cvref_t<Arg>, KeyType>::value ||
-            UsableAsKey<remove_cvref_t<Arg>>::value,
+        std::is_same<std::remove_cvref_t<Arg>, KeyType>::value ||
+            UsableAsKey<std::remove_cvref_t<Arg>>::value,
         int> = 0>
 auto callWithConstructedKey(Alloc& /*unused*/, Func&& f, Arg&& arg) {
   // we found a usable key in the args :)

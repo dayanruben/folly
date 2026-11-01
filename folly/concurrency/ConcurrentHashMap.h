@@ -180,7 +180,7 @@ class ConcurrentHashMap {
       T>;
 
   template <typename K>
-  using IsIter = std::is_same<ConstIterator, remove_cvref_t<K>>;
+  using IsIter = std::is_same<ConstIterator, std::remove_cvref_t<K>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousErase = std::enable_if_t<

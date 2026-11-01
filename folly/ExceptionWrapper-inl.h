@@ -214,10 +214,10 @@ inline bool exception_wrapper::with_exception_(This&, Fn fn_, tag_t<void>) {
 template <class This, class Fn, typename Ex>
 inline bool exception_wrapper::with_exception_(This& this_, Fn fn_, tag_t<Ex>) {
   if constexpr (std::is_const_v<Ex>) {
-    auto ptr = this_.template get_exception<remove_cvref_t<Ex>>();
+    auto ptr = this_.template get_exception<std::remove_cvref_t<Ex>>();
     return ptr && (void(fn_(static_cast<Ex&>(*ptr))), true);
   } else {
-    auto ptr = this_.template get_mutable_exception<remove_cvref_t<Ex>>();
+    auto ptr = this_.template get_mutable_exception<std::remove_cvref_t<Ex>>();
     return ptr && (void(fn_(static_cast<Ex&>(*ptr))), true);
   }
 }

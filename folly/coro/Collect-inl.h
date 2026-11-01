@@ -49,7 +49,7 @@ template <
     typename InputRange,
     typename Make,
     typename Iter = invoke_result_t<access::begin_fn, InputRange&>,
-    typename Elem = remove_cvref_t<decltype(*std::declval<Iter&>())>,
+    typename Elem = std::remove_cvref_t<decltype(*std::declval<Iter&>())>,
     typename RTask = invoke_result_t<Make&, Elem, std::size_t>>
 std::vector<RTask> collectMakeInnerTaskVec(InputRange& awaitables, Make& make) {
   std::vector<RTask> tasks;
@@ -460,7 +460,8 @@ auto collectAllRange(InputRange awaitables)
 
   exception_wrapper firstException;
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask = [&](awaitable_type semiAwaitable, std::size_t index)
       -> detail::BarrierTask {
     assert(index < tryResults.size());
@@ -529,7 +530,8 @@ auto collectAllRange(InputRange awaitables) -> folly::coro::Task<void> {
 
   exception_wrapper firstException;
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask =
       [&](awaitable_type semiAwaitable, std::size_t) -> detail::BarrierTask {
     try {
@@ -582,7 +584,8 @@ auto collectAllTryRange(InputRange awaitables)
 
   const CancellationToken& cancelToken = co_await co_current_cancellation_token;
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask = [&](awaitable_type semiAwaitable, std::size_t index)
       -> detail::BarrierTask {
     assert(index < results.size());
@@ -1104,7 +1107,7 @@ auto collectAnyWithoutException(SemiAwaitables&&... awaitables)
 template <typename... SemiAwaitables>
 auto collectAnyNoDiscard(SemiAwaitables&&... awaitables)
     -> folly::coro::Task<std::tuple<detail::collect_all_try_component_t<
-        remove_cvref_t<SemiAwaitables>>...>> {
+        std::remove_cvref_t<SemiAwaitables>>...>> {
   return detail::collectAnyNoDiscardImpl(
       std::make_index_sequence<sizeof...(SemiAwaitables)>{},
       static_cast<SemiAwaitables&&>(awaitables)...);
@@ -1128,7 +1131,8 @@ auto collectAnyRange(InputRange awaitables) -> folly::coro::Task<std::pair<
       firstCompletion;
   firstCompletion.first = size_t(-1);
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask = [&](awaitable_type semiAwaitable, size_t index)
       -> folly::coro::Task<void> {
     auto result = co_await folly::coro::co_awaitTry(std::move(semiAwaitable));
@@ -1168,7 +1172,8 @@ auto collectAnyWithoutExceptionRange(InputRange awaitables)
       firstValueOrLastException;
   firstValueOrLastException.first = std::numeric_limits<size_t>::max();
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask = [&](awaitable_type semiAwaitable, size_t index)
       -> folly::coro::Task<void> {
     auto result = co_await folly::coro::co_awaitTry(std::move(semiAwaitable));
@@ -1202,7 +1207,8 @@ auto collectAnyNoDiscardRange(InputRange awaitables)
       detail::range_reference_t<InputRange>>>
       results;
 
-  using awaitable_type = remove_cvref_t<detail::range_reference_t<InputRange>>;
+  using awaitable_type =
+      std::remove_cvref_t<detail::range_reference_t<InputRange>>;
   auto makeTask = [&](awaitable_type semiAwaitable, size_t index)
       -> folly::coro::Task<void> {
     auto result = co_await folly::coro::co_awaitTry(std::move(semiAwaitable));

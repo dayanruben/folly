@@ -90,7 +90,7 @@ class Indestructible final {
       typename U = T,
       std::enable_if_t<std::is_constructible<T, U&&>::value>* = nullptr,
       std::enable_if_t<
-          !std::is_same<Indestructible<T>, remove_cvref_t<U>>::value>* =
+          !std::is_same<Indestructible<T>, std::remove_cvref_t<U>>::value>* =
           nullptr,
       std::enable_if_t<!std::is_convertible<U&&, T>::value>* = nullptr>
   explicit constexpr Indestructible(U&& u) noexcept(
@@ -100,7 +100,7 @@ class Indestructible final {
       typename U = T,
       std::enable_if_t<std::is_constructible<T, U&&>::value>* = nullptr,
       std::enable_if_t<
-          !std::is_same<Indestructible<T>, remove_cvref_t<U>>::value>* =
+          !std::is_same<Indestructible<T>, std::remove_cvref_t<U>>::value>* =
           nullptr,
       std::enable_if_t<std::is_convertible<U&&, T>::value>* = nullptr>
   /* implicit */ constexpr Indestructible(U&& u) noexcept(
@@ -129,14 +129,20 @@ class Indestructible final {
   Indestructible(Indestructible const&) = delete;
   Indestructible& operator=(Indestructible const&) = delete;
 
-  T* get() noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] { return reinterpret_cast<T*>(&storage_.bytes); }
+  T* get() noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] {
+    return reinterpret_cast<T*>(&storage_.bytes);
+  }
   T const* get() const noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] {
     return reinterpret_cast<T const*>(&storage_.bytes);
   }
   T& operator*() noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] { return *get(); }
-  T const& operator*() const noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] { return *get(); }
+  T const& operator*() const noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] {
+    return *get();
+  }
   T* operator->() noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] { return get(); }
-  T const* operator->() const noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] { return get(); }
+  T const* operator->() const noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] {
+    return get();
+  }
 
   /* implicit */ operator T&() noexcept [[FOLLY_ATTR_CLANG_LIFETIMEBOUND]] {
     return *get();

@@ -79,7 +79,7 @@ class F14BasicSet {
       T>;
 
   template <typename K>
-  using IsIter = std::is_same<typename Policy::Iter, remove_cvref_t<K>>;
+  using IsIter = std::is_same<typename Policy::Iter, std::remove_cvref_t<K>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousErase = std::enable_if_t<
@@ -1084,8 +1084,8 @@ class F14VectorSetImpl
 
   template <typename K>
   using IsIter = std::disjunction<
-      std::is_same<typename Policy::Iter, remove_cvref_t<K>>,
-      std::is_same<typename Policy::ReverseIter, remove_cvref_t<K>>>;
+      std::is_same<typename Policy::Iter, std::remove_cvref_t<K>>,
+      std::is_same<typename Policy::ReverseIter, std::remove_cvref_t<K>>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousVectorErase = std::enable_if_t<

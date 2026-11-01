@@ -60,7 +60,7 @@ struct FindFirstOfTest : FindFirstOpOfTest<Param> {
 TYPED_TEST_SUITE_P(FindFirstOfTest);
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -71,7 +71,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -83,7 +83,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -95,7 +95,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2n) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -108,7 +108,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2n) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc_edge) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -120,7 +120,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc_edge) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2_edge) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -132,7 +132,7 @@ TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2_edge) {
 }
 
 TYPED_TEST_P(FindFirstOfTest, json_str_stress_loalpha_with_esc2n_edge) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_strbound);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -215,7 +215,7 @@ TYPED_TEST_SUITE_P(FindFirstNotOfTest);
 
 // dup?
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_whitespace) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -226,7 +226,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_whitespace) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -239,7 +239,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_text) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -253,7 +253,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_text) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_nulls) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -267,7 +267,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_nulls) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_his) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -281,7 +281,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_spaces_then_his) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -294,7 +294,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_text) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -308,7 +308,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_text) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_nulls) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -322,7 +322,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_nulls) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_his) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::json_whitespace);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -336,7 +336,7 @@ TYPED_TEST_P(FindFirstNotOfTest, json_ws_stress_wspaces_then_his) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, loweq_stress) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::loweq_chars);
 
   for (size_t i = 0; i <= self::big; ++i) {
@@ -350,7 +350,7 @@ TYPED_TEST_P(FindFirstNotOfTest, loweq_stress) {
 }
 
 TYPED_TEST_P(FindFirstNotOfTest, weird_stress) {
-  using self = folly::remove_cvref_t<decltype(*this)>;
+  using self = std::remove_cvref_t<decltype(*this)>;
   constexpr auto const finder = self::make_finder(self::weird_chars);
 
   for (size_t i = 0; i <= self::big; ++i) {

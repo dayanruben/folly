@@ -421,8 +421,8 @@ auto fmap_shared_ptr_aliasing(std::nullptr_t owner, GetU&& getU) = delete;
  *  Like std::make_unique, but deduces the type of the owned object.
  */
 template <typename T>
-std::unique_ptr<remove_cvref_t<T>> copy_to_unique_ptr(T&& t) {
-  return std::make_unique<remove_cvref_t<T>>(static_cast<T&&>(t));
+std::unique_ptr<std::remove_cvref_t<T>> copy_to_unique_ptr(T&& t) {
+  return std::make_unique<std::remove_cvref_t<T>>(static_cast<T&&>(t));
 }
 
 /**
@@ -433,8 +433,8 @@ std::unique_ptr<remove_cvref_t<T>> copy_to_unique_ptr(T&& t) {
  *  Like make_shared, but deduces the type of the owned object.
  */
 template <typename T>
-std::shared_ptr<remove_cvref_t<T>> copy_to_shared_ptr(T&& t) {
-  return std::make_shared<remove_cvref_t<T>>(static_cast<T&&>(t));
+std::shared_ptr<std::remove_cvref_t<T>> copy_to_shared_ptr(T&& t) {
+  return std::make_shared<std::remove_cvref_t<T>>(static_cast<T&&>(t));
 }
 
 /**
@@ -446,8 +446,8 @@ std::shared_ptr<remove_cvref_t<T>> copy_to_shared_ptr(T&& t) {
  *  Like copy_to_shared_ptr, but returns a shared_ptr to const.
  */
 template <typename T>
-std::shared_ptr<remove_cvref_t<T> const> copy_to_shared_ptr_const(T&& t) {
-  return std::make_shared<remove_cvref_t<T> const>(static_cast<T&&>(t));
+std::shared_ptr<std::remove_cvref_t<T> const> copy_to_shared_ptr_const(T&& t) {
+  return std::make_shared<std::remove_cvref_t<T> const>(static_cast<T&&>(t));
 }
 
 /**

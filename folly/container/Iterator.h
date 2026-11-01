@@ -125,7 +125,7 @@ using iterator_reference_t = decltype(*std::declval<Iter&>());
 //  key/value containers usually use std::pair<const K, V> as a value_type.
 template <typename Iter>
 using iterator_key_type_t =
-    remove_cvref_t<typename iterator_value_type_t<Iter>::first_type>;
+    std::remove_cvref_t<typename iterator_value_type_t<Iter>::first_type>;
 
 //  iterator_mapped_type_t
 //

@@ -83,8 +83,8 @@ class F14BasicMap {
 
   template <typename K>
   using IsIter = std::disjunction<
-      std::is_same<typename Policy::Iter, remove_cvref_t<K>>,
-      std::is_same<typename Policy::ConstIter, remove_cvref_t<K>>>;
+      std::is_same<typename Policy::Iter, std::remove_cvref_t<K>>,
+      std::is_same<typename Policy::ConstIter, std::remove_cvref_t<K>>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousErase = std::enable_if_t<
@@ -1424,10 +1424,10 @@ class F14VectorMapImpl
 
   template <typename K>
   using IsIter = std::disjunction<
-      std::is_same<typename Policy::Iter, remove_cvref_t<K>>,
-      std::is_same<typename Policy::ConstIter, remove_cvref_t<K>>,
-      std::is_same<typename Policy::ReverseIter, remove_cvref_t<K>>,
-      std::is_same<typename Policy::ConstReverseIter, remove_cvref_t<K>>>;
+      std::is_same<typename Policy::Iter, std::remove_cvref_t<K>>,
+      std::is_same<typename Policy::ConstIter, std::remove_cvref_t<K>>,
+      std::is_same<typename Policy::ReverseIter, std::remove_cvref_t<K>>,
+      std::is_same<typename Policy::ConstReverseIter, std::remove_cvref_t<K>>>;
 
   template <typename K, typename T>
   using EnableHeterogeneousVectorErase = std::enable_if_t<

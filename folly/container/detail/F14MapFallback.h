@@ -54,8 +54,8 @@ class F14BasicMap : public std::unordered_map<K, M, H, E, A> {
 
   template <typename K2>
   using IsIter = std::disjunction<
-      std::is_same<typename Super::iterator, remove_cvref_t<K2>>,
-      std::is_same<typename Super::const_iterator, remove_cvref_t<K2>>>;
+      std::is_same<typename Super::iterator, std::remove_cvref_t<K2>>,
+      std::is_same<typename Super::const_iterator, std::remove_cvref_t<K2>>>;
 
   template <typename K2, typename T>
   using EnableHeterogeneousErase = std::enable_if_t<

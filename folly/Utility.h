@@ -1010,22 +1010,22 @@ inline constexpr object_from_member_fn object_from_member{};
   template <class... Args>                                                    \
   [[maybe_unused]] FOLLY_ERASE_HACK_GCC                                       \
   constexpr auto MEMBER(Args&&... args) & FOLLY_DETAIL_FORWARD_BODY(          \
-      ::folly::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
+      ::std::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
           *this, static_cast<Args&&>(args)...))                               \
   template <class... Args>                                                    \
   [[maybe_unused]] FOLLY_ERASE_HACK_GCC                                       \
   constexpr auto MEMBER(Args&&... args) const& FOLLY_DETAIL_FORWARD_BODY(     \
-      ::folly::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
+      ::std::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
           *this, static_cast<Args&&>(args)...))                               \
   template <class... Args>                                                    \
   [[maybe_unused]] FOLLY_ERASE_HACK_GCC                                       \
   constexpr auto MEMBER(Args&&... args) && FOLLY_DETAIL_FORWARD_BODY(         \
-      ::folly::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
+      ::std::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
           std::move(*this), static_cast<Args&&>(args)...))                    \
   template <class... Args>                                                    \
   [[maybe_unused]] FOLLY_ERASE_HACK_GCC                                       \
   constexpr auto MEMBER(Args&&... args) const&& FOLLY_DETAIL_FORWARD_BODY(    \
-      ::folly::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
+      ::std::remove_cvref_t<decltype(*this)>::DELEGATE(                     \
           std::move(*this), static_cast<Args&&>(args)...))                    \
   /* enforce semicolon after macro */ static_assert(true)
 // clang-format on

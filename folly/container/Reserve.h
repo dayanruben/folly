@@ -41,7 +41,7 @@ using detect_reserve = decltype(FOLLY_DECLVAL(C).reserve(FOLLY_DECLVAL(A)...));
 
 template <typename C>
 using container_detect_reserve =
-    detect_reserve<C, typename remove_cvref_t<C>::size_type>;
+    detect_reserve<C, typename std::remove_cvref_t<C>::size_type>;
 
 } // namespace detail
 

@@ -285,7 +285,7 @@ decltype(auto) fetch_impl(TupleTag, Sequence&& sequence, Index index) {
 template <typename Sequence, typename Index>
 decltype(auto) fetch_impl(RangeTag, Sequence&& sequence, Index&& index) {
   using iter = decltype(access::begin(std::declval<Sequence>()));
-  using iter_traits = std::iterator_traits<remove_cvref_t<iter>>;
+  using iter_traits = std::iterator_traits<std::remove_cvref_t<iter>>;
   using iter_cat = typename iter_traits::iterator_category;
   using tag = std::conditional_t<
       std::is_same<iter_cat, std::random_access_iterator_tag>::value,

@@ -165,10 +165,10 @@ class CoroExceptionMatcherImpl {
 template <typename Fn>
 auto makeCoAction(Fn&& fn) {
   static_assert(
-      std::is_copy_constructible_v<remove_cvref_t<Fn>>,
+      std::is_copy_constructible_v<std::remove_cvref_t<Fn>>,
       "Fn should be copyable to allow calling mocked call multiple times.");
 
-  using Ret = invoke_result_t<remove_cvref_t<Fn>&&>;
+  using Ret = invoke_result_t<std::remove_cvref_t<Fn>&&>;
   return ::testing::InvokeWithoutArgs(
       [fn = std::forward<Fn>(fn)]() mutable -> Ret { return co_invoke(fn); });
 }
@@ -179,7 +179,7 @@ auto makeCoAction(Fn&& fn) {
 template <typename R>
 struct OnceForwarder {
   static_assert(std::is_reference_v<R>);
-  using V = remove_cvref_t<R>;
+  using V = std::remove_cvref_t<R>;
 
   explicit OnceForwarder(R r) noexcept(std::is_nothrow_constructible_v<V>)
       : val_(static_cast<R>(r)) {}

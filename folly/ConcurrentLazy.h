@@ -66,8 +66,8 @@ struct ConcurrentLazy {
 };
 
 template <class Func>
-ConcurrentLazy<remove_cvref_t<Func>> concurrent_lazy(Func&& func) {
-  return ConcurrentLazy<remove_cvref_t<Func>>(static_cast<Func&&>(func));
+ConcurrentLazy<std::remove_cvref_t<Func>> concurrent_lazy(Func&& func) {
+  return ConcurrentLazy<std::remove_cvref_t<Func>>(static_cast<Func&&>(func));
 }
 
 } // namespace folly

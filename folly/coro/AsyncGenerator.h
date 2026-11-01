@@ -210,7 +210,7 @@ class AsyncGeneratorPromise;
  */
 template <
     typename Reference,
-    typename Value = remove_cvref_t<Reference>,
+    typename Value = std::remove_cvref_t<Reference>,
     bool RequiresCleanup = false>
 class [[nodiscard]] AsyncGenerator {
   static_assert(
@@ -553,7 +553,7 @@ class [[nodiscard]] AsyncGenerator {
   coroutine_handle<promise_type> coro_;
 };
 
-template <typename Reference, typename Value = remove_cvref_t<Reference>>
+template <typename Reference, typename Value = std::remove_cvref_t<Reference>>
 using CleanableAsyncGenerator =
     AsyncGenerator<Reference, Value, true /* RequiresCleanup */>;
 

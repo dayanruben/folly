@@ -29,7 +29,7 @@ namespace folly::simd::detail {
 
 template <typename T>
 auto findSimdFriendlyEquivalent() {
-  static_assert(std::is_same_v<T, remove_cvref_t<T>>);
+  static_assert(std::is_same_v<T, std::remove_cvref_t<T>>);
   if constexpr (std::is_enum_v<T>) {
     return findSimdFriendlyEquivalent<std::underlying_type_t<T>>();
   } else if constexpr (std::is_pointer_v<T>) {
