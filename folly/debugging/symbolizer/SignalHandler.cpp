@@ -30,6 +30,7 @@
 
 #include <folly/Portability.h>
 #include <folly/ScopeGuard.h>
+#include <folly/debugging/symbolizer/ElfCache.h>
 #include <folly/debugging/symbolizer/Symbolizer.h>
 #include <folly/lang/ToAscii.h>
 #include <folly/portability/SysSyscall.h>
@@ -677,6 +678,9 @@ void installFatalSignalHandler(std::bitset<64> signals) {
   // stack overflow. Replace it with the unsafe self-allocate printer.
   bool useUnsafePrinter = kIsLinux && isSmallSigAltStackEnabled();
   if (useUnsafePrinter) {
+#if FOLLY_HAVE_ELF
+    SignalSafeElfCache::warmUp();
+#endif
 #if FOLLY_HAVE_SWAPCONTEXT
     gStackTracePrinter = new UnsafeSelfAllocateStackTracePrinter();
 #else

@@ -75,6 +75,7 @@ fb_dirsync_cpp_library(
     deps = [
         "//folly:c_portability",
         "//folly:scope_guard",
+        "//folly/lang:hint",
         "//folly/portability:sys_mman",
     ],
     exported_deps = [

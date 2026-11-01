@@ -21,6 +21,7 @@
 
 #include <folly/CPortability.h>
 #include <folly/ScopeGuard.h>
+#include <folly/lang/Hint.h>
 #include <folly/portability/Config.h>
 #include <folly/portability/SysMman.h>
 
@@ -39,6 +40,19 @@ FOLLY_NOINLINE bool pathLess(
 }
 
 } // namespace
+
+void SignalSafeElfCache::warmUp() noexcept {
+  const char* left = "a";
+  const char* right = "b";
+  compiler_must_not_predict(left);
+  compiler_must_not_predict(right);
+  auto lhs = cstring_view(left, 1);
+  auto rhs = cstring_view(right, 1);
+  compiler_must_not_predict(lhs);
+  compiler_must_not_predict(rhs);
+  const bool less = pathLess(lhs, rhs);
+  compiler_must_not_elide(less);
+}
 
 SignalSafeElfCache::Path::Path(
     char const* const data,

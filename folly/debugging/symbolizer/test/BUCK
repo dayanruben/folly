@@ -6,6 +6,7 @@ load("@fbcode_macros//build_defs:cpp_unittest.bzl", "cpp_unittest")
 load("@fbcode_macros//build_defs:custom_unittest.bzl", "custom_unittest")
 load("@fbcode_macros//build_defs:export_files.bzl", "export_file")
 load("@fbcode_macros//build_defs:native_rules.bzl", "buck_sh_binary")
+load("@fbcode_macros//build_defs:python_unittest.bzl", "python_unittest")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_unittest.bzl", "fb_dirsync_cpp_unittest")
 load(":validate_folly_symbolizer.bzl", "SPLIT_DWARF_FLAGS", "customized_unittest", "validate_folly_symbolizer", "validate_symbolizer_dwp")
 
@@ -65,6 +66,26 @@ fbcode_target(
     deps = [
         "//folly/debugging/symbolizer:symbolizer",
     ],
+)
+
+fbcode_target(
+    _kind = cpp_binary,
+    name = "elf_cache_comparison",
+    srcs = ["SignalSafeElfCacheComparison.cpp"],
+    deps = [
+        "//folly/debugging/symbolizer:elf_cache",
+        "//folly/memory:reentrant_allocator",
+    ],
+)
+
+fbcode_target(
+    _kind = python_unittest,
+    name = "elf_cache_comparison_binding_test",
+    srcs = ["elf_cache_comparison_binding_test.py"],
+    env = {
+        "ELF_CACHE_COMPARISON": "$(location :elf_cache_comparison)",
+    },
+    target_compatible_with = ["ovr_config//os:linux"],
 )
 
 fbcode_target(

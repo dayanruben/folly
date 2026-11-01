@@ -58,6 +58,11 @@ class SignalSafeElfCache : public ElfCacheBase {
  public:
   std::shared_ptr<ElfFile> getFile(StringPiece path) override;
 
+  /// Eagerly resolve comparison and length-check bindings before installing
+  /// signal handlers: binding resolution is not async-signal-safe. No stack
+  /// capture or symbolization is performed.
+  static void warmUp() noexcept;
+
  protected:
   //  Path
   //

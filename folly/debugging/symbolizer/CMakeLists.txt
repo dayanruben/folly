@@ -70,6 +70,7 @@ folly_add_library(
   HEADERS ElfCache.h
   DEPS
     folly_c_portability
+    folly_lang_hint
     folly_portability_sys_mman
     folly_scope_guard
   EXPORTED_DEPS
