@@ -1,8 +1,6 @@
-load("@fbcode_macros//build_defs:build_file_migration.bzl", "fbcode_target")
-load("@fbcode_macros//build_defs:cpp_binary.bzl", "cpp_binary")
-load("@fbcode_macros//build_defs:cpp_unittest.bzl", "cpp_unittest")
 load("@fbcode_macros//build_defs:python_unittest.bzl", "python_unittest")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_benchmark.bzl", "fb_dirsync_cpp_benchmark")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_binary.bzl", "fb_dirsync_cpp_binary")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_library.bzl", "fb_dirsync_cpp_library")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_unittest.bzl", "fb_dirsync_cpp_unittest")
 
@@ -52,27 +50,27 @@ fb_dirsync_cpp_library(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "exception_tracer_base_test",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":exception_tracer_test_main",  # @manual
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "exception_tracer_test",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":exception_tracer_test_main",  # @manual
         "//folly/debugging/exception_tracer:exception_tracer",  # @manual  # @manual
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "smart_exception_tracer_test",
     srcs = ["SmartExceptionTracerTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/coro:blocking_wait",
         "//folly/coro:task",
@@ -94,20 +92,20 @@ fb_dirsync_cpp_benchmark(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "exception_tracer_uncaught_test_bin",
     srcs = ["ExceptionTracerUncaughtTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/debugging/exception_tracer:exception_tracer",  # @manual
     ],
 )
 
-fbcode_target(
-    _kind = python_unittest,
+python_unittest(
     name = "exception_tracer_uncaught_test",
     srcs = ["exception_tracer_uncaught_test.py"],
     env = {
         "EXCEPTION_TRACER_TEST_BIN": "$(location :exception_tracer_uncaught_test_bin)",
     },
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
 )

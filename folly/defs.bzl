@@ -265,10 +265,16 @@ def folly_xplat_cxx_test(name, srcs, raw_headers = [], headers = [], deps = [], 
     env = kwargs.get("env", None)
     labels = kwargs.get("labels", None)
     modifiers = kwargs.get("modifiers", None)
+    constraint_overrides = kwargs.get("constraint_overrides", None)
+    if constraint_overrides != None:
+        # fb_xplat_cxx_test has no `constraint_overrides`; test targets are
+        # top-level, so modifiers apply the same pin.
+        modifiers = (modifiers or []) + constraint_overrides
     compiler_flags = kwargs.get("compiler_flags", None)
     preprocessor_flags = kwargs.get("preprocessor_flags", None)
     linker_flags = kwargs.get("linker_flags", None)
     link_style = kwargs.get("link_style", None)
+    target_compatible_with = kwargs.get("target_compatible_with", None)
 
     extra_kwargs = {}
     if oncall != None:
@@ -289,6 +295,8 @@ def folly_xplat_cxx_test(name, srcs, raw_headers = [], headers = [], deps = [], 
     })
     if link_style != None:
         extra_kwargs["link_style"] = link_style
+    if target_compatible_with != None:
+        extra_kwargs["target_compatible_with"] = target_compatible_with
 
     fb_xplat_cxx_test(
         name = name,
@@ -306,12 +314,14 @@ def folly_xplat_cxx_test(name, srcs, raw_headers = [], headers = [], deps = [], 
     )
 
 def folly_xplat_cxx_binary(
-    name, srcs, raw_headers = [], deps = [], oncall = None, dlopen_enabled = False, cxx_sanitizer_runtime_provider = sanitizers.RUNTIME_PROVIDER_TARGET, **kwargs
+    name, srcs = [], raw_headers = [], deps = [], oncall = None, dlopen_enabled = False, cxx_sanitizer_runtime_provider = sanitizers.RUNTIME_PROVIDER_TARGET, **kwargs
 ):
     if sanitizers.runtime_provider_includes_host(cxx_sanitizer_runtime_provider) and not dlopen_enabled:
         fail("cxx_sanitizer_runtime_provider = 'host' requires dlopen_enabled")
 
     extra_kwargs = {"oncall": oncall} if oncall != None else {}
+    if "target_compatible_with" in kwargs:
+        extra_kwargs["target_compatible_with"] = kwargs["target_compatible_with"]
 
     if dlopen_enabled:
         extra_kwargs["linker_flags"] = kwargs.get("linker_flags", [])
