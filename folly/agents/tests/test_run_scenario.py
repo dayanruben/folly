@@ -27,7 +27,6 @@ from unittest import mock
 
 from folly.agents.tests import checkpoint, run_scenario as runner
 
-
 REVISION = "a" * 40
 
 
@@ -225,6 +224,7 @@ class RunScenarioTest(unittest.TestCase):
         *,
         prompt: str = "prompt.md",
         no_rules_prompt: str | None = None,
+        outputs: list[str] | None = None,
         inputs: list[dict[str, str]] | None = None,
         rules: list[str] | None = None,
         scenario: Path | None = None,
@@ -242,6 +242,8 @@ class RunScenarioTest(unittest.TestCase):
             for path in rules or []
             if (self.rules_root / path).is_file()
         )
+        if outputs is not None:
+            contents["outputs"] = outputs
         return write_manifest(scenario / "scenario.json", contents)
 
     def prepare(
@@ -672,6 +674,51 @@ class RunScenarioTest(unittest.TestCase):
         self.assertNotIn("critic_iterate_rounds", metadata)
         self.assertNotIn("no_rules", metadata)
 
+    def test_outputs_cannot_overwrite_run_evidence(self) -> None:
+        for output in ("run.json", "trace.jsonl", "workspace", "nested/review.md"):
+            with (
+                self.subTest(output=output),
+                self.assertRaisesRegex(runner.RunnerError, "below output/"),
+            ):
+                self.manifest(outputs=[output])
+
+    def test_output_namespace_allows_metadata_names_and_rejects_required_collisions(
+        self,
+    ) -> None:
+        self.manifest(
+            outputs=["output/run.json", "output/AGENTS.md", "output/nested/result"]
+        )
+        run = self.prepare()
+        for relative in run.outputs:
+            write(run.workdir / relative, "artifact")
+        self.assertEqual(runner._finish_run(run, 0), 0)
+        self.assertEqual((run.root / "output/run.json").read_text(), "artifact")
+        self.assertEqual(
+            json.loads((run.root / "run.json").read_text())["status"], "complete"
+        )
+        for outputs in (
+            ["output/a", "output/a"],
+            ["output/a", "output/a/child"],
+            ["output"],
+        ):
+            with self.subTest(outputs=outputs), self.assertRaises(runner.RunnerError):
+                self.manifest(outputs=outputs)
+
+    def test_unspecified_output_names_still_require_content(self) -> None:
+        # No filenames are prescribed; empty files alone do not finish the task.
+        self.manifest(outputs=[])
+        for populated in (False, True):
+            with self.subTest(populated=populated):
+                run = self.prepare()
+                (run.workdir / "output/empty-file").touch()
+                if populated:
+                    (run.workdir / "output/review.md").write_text("finding")
+                self.assertEqual(runner._finish_run(run, 0), 0 if populated else 2)
+                self.assertEqual(
+                    json.loads((run.root / "run.json").read_text())["status"],
+                    "complete" if populated else "missing-output",
+                )
+
     def test_prepare_injects_and_records_critic_iterate_rounds(self) -> None:
         write(self.scenario / "prompt.md", "Do the task.\n")
         write(self.rules_root / runner.CRITIC_ITERATE_RULE, "critic")
@@ -761,11 +808,11 @@ class RunScenarioTest(unittest.TestCase):
         write(self.scenario / "prompt.md", "Do the task.\n")
         write(self.scenario / "prompt.no-rules.md", "Do the bare task.\n")
         write(self.scenario / "input.md", "input")
-        write(self.rules_root / "write.md", "writing")
         self.manifest(
             no_rules_prompt="prompt.no-rules.md",
             inputs=[{"source": "input.md", "destination": "input.md"}],
-            rules=["write.md"],
+            rules=["critic-iterate.md"],
+            outputs=["output/review.md"],
         )
 
         run = self.prepare(install_rules=False)
@@ -775,6 +822,7 @@ class RunScenarioTest(unittest.TestCase):
             {path.name for path in run.workdir.iterdir()}, {"input.md", "output"}
         )
         self.assertFalse(run.install_rules)
+        self.assertFalse(run.checkpoint)
         metadata = json.loads((run.root / "run.json").read_text())
         self.assertEqual(metadata["rules"], [])
         self.assertTrue(metadata["no_rules"])
@@ -1003,6 +1051,7 @@ class RunScenarioTest(unittest.TestCase):
         write(self.rules_root / runner.CRITIC_ITERATE_RULE, "critic")
         self.manifest(
             rules=[runner.CRITIC_ITERATE_RULE.as_posix()],
+            outputs=["output/main.md", "output/notes.md"],
         )
         make_tools(self.rules_root)
         write(
@@ -1189,11 +1238,67 @@ class RunScenarioTest(unittest.TestCase):
         self.assertEqual(metadata["exit_code"], 7)
         self.assertEqual(metadata["executables"]["codex"], str(codex.resolve()))
 
+    def test_declared_outputs_stage_and_preserve_all_artifacts(self) -> None:
+        write(self.scenario / "finding.md", "finding")
+        write(self.scenario / "notes.md", "notes")
+        self.manifest(
+            inputs=[
+                {"source": "finding.md", "destination": "output/review.md"},
+                {"source": "notes.md", "destination": "output/review-notes.md"},
+            ],
+            outputs=["output/review.md", "output/review-notes.md"],
+        )
+        run = self.prepare()
+
+        (run.workdir / "output/review.md").write_text("finished finding")
+
+        self.assertEqual(runner._finish_run(run, 0), 0)
+        self.assertEqual(
+            (run.root / "output/review.md").read_text(), "finished finding"
+        )
+        self.assertEqual((run.root / "output/review-notes.md").read_text(), "notes")
+        self.assertEqual((self.scenario / "finding.md").read_text(), "finding")
+        metadata = json.loads((run.root / "run.json").read_text())
+        self.assertEqual(
+            metadata["outputs"], ["output/review.md", "output/review-notes.md"]
+        )
+        self.assertEqual(metadata["status"], "complete")
+
+    def test_declared_outputs_require_nonempty_regular_files(self) -> None:
+        self.manifest(outputs=["output/review.md", "output/nested/review-notes.md"])
+        for kind in ("missing", "empty", "directory"):
+            with self.subTest(kind=kind):
+                run = self.prepare()
+                (run.workdir / "output/review.md").write_text("finding")
+                notes = run.workdir / "output/nested/review-notes.md"
+                notes.parent.mkdir()
+                if kind == "empty":
+                    notes.touch()
+                elif kind == "directory":
+                    notes.mkdir()
+
+                self.assertEqual(runner._finish_run(run, 0), 2)
+                self.assertEqual(
+                    (run.workdir / "output/review.md").read_text(), "finding"
+                )
+                if kind in ("missing", "empty"):
+                    self.assertEqual(
+                        (run.root / "output/review.md").read_text(), "finding"
+                    )
+                expected = (
+                    "missing-output"
+                    if kind in ("missing", "empty")
+                    else "invalid-output"
+                )
+                self.assertEqual(
+                    json.loads((run.root / "run.json").read_text())["status"], expected
+                )
+
     def test_invalid_output_keeps_workspace_evidence_and_author_status(self) -> None:
-        self.manifest()
+        self.manifest(outputs=["output/invalid.md", "output/review.md"])
         run = self.prepare()
         (run.workdir / "output/review.md").write_text("finding")
-        (run.workdir / "output/main.md").mkdir()
+        (run.workdir / "output/invalid.md").mkdir()
 
         self.assertEqual(runner._finish_run(run, 7), 7)
 
@@ -1201,21 +1306,7 @@ class RunScenarioTest(unittest.TestCase):
         metadata = json.loads((run.root / "run.json").read_text())
         self.assertEqual(metadata["status"], "failed")
         self.assertEqual(metadata["exit_code"], 7)
-        self.assertIn("main.md", metadata["output_preservation_error"])
-
-    def test_success_without_output_is_runner_failure(self) -> None:
-        self.manifest()
-        run, codex = self.prepare_launch()
-        _, _, command_runner = self.fake_codex(run, returncode=0, output=None)
-
-        result = runner.launch(
-            run, codex, "model", "high", command_runner=command_runner
-        )
-
-        self.assertEqual(result, 2)
-        metadata = json.loads((run.root / "run.json").read_text())
-        self.assertEqual(metadata["status"], "missing-output")
-        self.assertEqual(metadata["exit_code"], 2)
+        self.assertIn("invalid.md", metadata["output_preservation_error"])
 
     def test_output_root_and_workspace_ancestors_cannot_be_worker_symlinks(
         self,
@@ -1246,7 +1337,7 @@ class RunScenarioTest(unittest.TestCase):
                 self.assertTrue(metadata["output_preservation_error"])
 
     def test_preservation_write_error_keeps_workspace_and_author_failure(self) -> None:
-        self.manifest()
+        self.manifest(outputs=[])
         run = self.prepare()
         (run.workdir / "output/a-failed").write_bytes(b"failed")
         (run.workdir / "output/z-good").write_bytes(b"preserved")
@@ -1290,6 +1381,20 @@ class RunScenarioTest(unittest.TestCase):
         self.assertEqual(
             runner.directory_snapshot.read(run.workdir / "output"), expected
         )
+
+    def test_success_without_output_is_runner_failure(self) -> None:
+        self.manifest()
+        run, codex = self.prepare_launch()
+        _, _, command_runner = self.fake_codex(run, returncode=0, output=None)
+
+        result = runner.launch(
+            run, codex, "model", "high", command_runner=command_runner
+        )
+
+        self.assertEqual(result, 2)
+        metadata = json.loads((run.root / "run.json").read_text())
+        self.assertEqual(metadata["status"], "missing-output")
+        self.assertEqual(metadata["exit_code"], 2)
 
     def test_launch_without_rules_preserves_the_ambient_path(self) -> None:
         self.manifest(no_rules_prompt="prompt.md")

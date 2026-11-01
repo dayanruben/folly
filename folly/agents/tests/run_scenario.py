@@ -74,6 +74,7 @@ class Manifest:
     rules: tuple[PurePosixPath, ...]
     no_rules_prompt: PurePosixPath | None = None
     packages_under_test: tuple[str, ...] = ()
+    outputs: tuple[PurePosixPath, ...] = (PurePosixPath(DEFAULT_OUTPUT),)
 
 
 @dataclass(frozen=True)
@@ -137,8 +138,7 @@ def load_manifest(path: Path) -> Manifest:
     raw = json.loads(path.read_text())
     assert type(raw) is dict
     manifest_keys = {"prompt", "inputs", "rules"}
-    if "no_rules_prompt" in raw:
-        manifest_keys.add("no_rules_prompt")
+    manifest_keys.update(set(raw) & {"no_rules_prompt", "outputs"})
     if "packages_under_test" in raw:
         manifest_keys.add("packages_under_test")
     assert set(raw) == manifest_keys
@@ -182,7 +182,20 @@ def load_manifest(path: Path) -> Manifest:
     for package in packages:
         package_path = _relative_path(package, "packages_under_test")
         assert len(package_path.parts) == 1 and package_path.suffix == ""
-    return Manifest(prompt, tuple(inputs), rules, no_rules_prompt, tuple(packages))
+    raw_outputs = raw.get("outputs", [DEFAULT_OUTPUT])
+    assert type(raw_outputs) is list
+    outputs = tuple(
+        _relative_path(output, f"outputs[{index}]")
+        for index, output in enumerate(raw_outputs)
+    )
+    destinations: set[PurePosixPath] = set()
+    for output in outputs:
+        if len(output.parts) < 2 or output.parts[0] != OUTPUT_DIR:
+            raise RunnerError(f"required output must be below output/: {output}")
+        _claim(destinations, output)
+    return Manifest(
+        prompt, tuple(inputs), rules, no_rules_prompt, tuple(packages), outputs
+    )
 
 
 def _prompt_for_run(manifest: Manifest, install_rules: bool) -> PurePosixPath:
@@ -578,6 +591,7 @@ def prepare(
             install_rules,
             critic_iterate_rounds,
             checkpoint_run,
+            manifest.outputs,
         )
         prompt_prefix = (
             _rule_loading_instruction(run.workdir / "rules") if install_rules else ""
@@ -617,6 +631,8 @@ def prepare(
         }
         if not install_rules:
             metadata["no_rules"] = True
+        if manifest.outputs != (PurePosixPath(DEFAULT_OUTPUT),):
+            metadata["outputs"] = [output.as_posix() for output in manifest.outputs]
         if critic_iterate_rounds is not None:
             metadata["critic_iterate_rounds"] = critic_iterate_rounds
         if checkpoint_run:

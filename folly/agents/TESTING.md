@@ -171,11 +171,10 @@ differences. Evaluators may add narrow, repeatable observations; they do not
 declare a pass, failure, or winner. Leave that judgment to the user.
 
 Before comparing a run, confirm that it reached the scenario's declared stop
-point, produced a nonempty `output/main.md`, and read no undeclared task
-evidence. A completed-artifact scenario must also complete every review required
-by its rules; a diagnostic may deliberately stop earlier. Authentication,
-launcher, or write failures are inconclusive; preserve their run directories for
-diagnosis.
+point, produced its required outputs, and read no undeclared task evidence. A
+completed-artifact scenario must also complete every review required by its
+rules; a diagnostic may deliberately stop earlier. Authentication, launcher, or
+write failures are inconclusive; preserve their run directories for diagnosis.
 
 If the scenario has a `samples/` directory, or the user asks to preserve a run,
 follow [tracking-samples.md](tests/tracking-samples.md).

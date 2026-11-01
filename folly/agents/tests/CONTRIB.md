@@ -11,13 +11,23 @@ Each scenario has:
 - `README.md`: the behavior being isolated, why it matters in real use, the
   artifact and reader, the deliberate stop point, and concrete observations to
   report;
-- `scenario.json`: the normal author prompt (`prompt`), optional bare prompt
-  (`no_rules_prompt`), staged file mappings (`inputs`), startup rules (`rules`),
-  and available rule packages (`packages_under_test`);
+
 - optional `input/`: frozen material visible to the author;
-- optional `eval/`: a narrow check used only after `output/main.md` is frozen;
-  and
+- optional `eval/`: a narrow check used only after the output artifact is
+  frozen; and
 - optional `samples/`: selected prior outputs.
+
+Copy a nearby `scenario.json`. Configure:
+
+- `prompt`: author prompt path.
+- `no_rules_prompt`: optional prompt for `--no-rules`.
+- `inputs`: input paths and where to stage them.
+- `outputs`: required file paths, e.g. `output/main.md`.
+- `rules`: operational rules to load.
+- `packages_under_test`: available rule packages, including cross-package
+  dependencies.
+
+Tasks write to `output/`, usually one file named `main.md`.
 
 Keep the author's workdir free of:
 
