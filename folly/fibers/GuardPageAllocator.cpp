@@ -345,6 +345,23 @@ void dumpFiberOverflowStack() {
 }
 #endif // FOLLY_FIBERS_SYMBOLIZE_OVERFLOW
 
+// Chain to the previously installed SIGSEGV action. When no handler was
+// installed before us the old action is SIG_DFL (or SIG_IGN); calling that
+// as a function pointer would jump to address 0 (or 1) and double-fault.
+// The old action has already been restored with sigaction() by our caller,
+// so re-raising delivers the signal to the restored disposition.
+// raise() is async-signal-safe.
+void chainToOldSignalHandler(int signum, siginfo_t* info, void* ucontext) {
+  if (oldSigsegvAction.sa_handler == SIG_DFL ||
+      oldSigsegvAction.sa_handler == SIG_IGN) {
+    ::raise(signum);
+  } else if (oldSigsegvAction.sa_flags & SA_SIGINFO) {
+    oldSigsegvAction.sa_sigaction(signum, info, ucontext);
+  } else {
+    oldSigsegvAction.sa_handler(signum);
+  }
+}
+
 FOLLY_NOINLINE void FOLLY_FIBERS_STACK_OVERFLOW_DETECTED(
     int signum, siginfo_t* info, void* ucontext) {
   std::cerr << "folly::fibers Fiber stack overflow detected." << std::endl;
@@ -354,11 +371,7 @@ FOLLY_NOINLINE void FOLLY_FIBERS_STACK_OVERFLOW_DETECTED(
   dumpFiberOverflowStack();
   // Let the old signal handler handle the signal, but make this function name
   // present in the stack trace.
-  if (oldSigsegvAction.sa_flags & SA_SIGINFO) {
-    oldSigsegvAction.sa_sigaction(signum, info, ucontext);
-  } else {
-    oldSigsegvAction.sa_handler(signum);
-  }
+  chainToOldSignalHandler(signum, info, ucontext);
   // Prevent tail call optimization.
   std::cerr << "";
 }
@@ -382,11 +395,7 @@ void sigsegvSignalHandler(int signum, siginfo_t* info, void* ucontext) {
   // Let the old signal handler handle the signal. Invoke this synchronously
   // within our own signal handler to ensure that the kernel siginfo context
   // is not lost.
-  if (oldSigsegvAction.sa_flags & SA_SIGINFO) {
-    oldSigsegvAction.sa_sigaction(signum, info, ucontext);
-  } else {
-    oldSigsegvAction.sa_handler(signum);
-  }
+  chainToOldSignalHandler(signum, info, ucontext);
 }
 
 bool isInJVM() {
