@@ -1,20 +1,15 @@
 load("@fbcode_macros//build_defs:cython_library.bzl", "CYTHON_DEFAULT_APPLE_SDKS", "CYTHON_DEFAULT_PLATFORMS")
-load("@fbsource//tools/build_defs:platform_defs.bzl", "MACOSX")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_library.bzl", "fb_dirsync_cpp_library")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cython_library.bzl", "fb_dirsync_cython_library")
 load("../defs.bzl", "folly_xplat_library")
 
 oncall("fbcode_entropy_wardens_folly")
 
-# No Python interpreter ships for iOS, so targets needing Python.h build
-# their Apple variant for macOS only.
-_MACOS_ONLY_APPLE_SDKS = (MACOSX,)
-
 fb_dirsync_cpp_library(
     name = "gil_aware_manual_executor",
     srcs = ["GILAwareManualExecutor.cpp"],
     headers = ["GILAwareManualExecutor.h"],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     platforms = CYTHON_DEFAULT_PLATFORMS,
     use_raw_headers = True,
     xplat_impl = folly_xplat_library,
@@ -65,7 +60,7 @@ fb_dirsync_cpp_library(
     headers = [
         "ProactorExecutor.h",
     ],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     platforms = CYTHON_DEFAULT_PLATFORMS,
     use_raw_headers = True,
     xplat_impl = folly_xplat_library,
@@ -123,7 +118,7 @@ fb_dirsync_cpp_library(
     headers = [
         "executor.h",
     ],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     compiler_flags = select({
         "DEFAULT": [],
         "ovr_config//os:windows": [
@@ -175,7 +170,7 @@ fb_dirsync_cpp_library(
     headers = [
         "AsyncioExecutor.h",
     ],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     platforms = CYTHON_DEFAULT_PLATFORMS,
     use_raw_headers = True,
     xplat_impl = folly_xplat_library,
@@ -287,7 +282,7 @@ fb_dirsync_cpp_library(
     name = "iobuf_ext",
     srcs = ["iobuf_ext.cpp"],
     headers = ["iobuf_ext.h"],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     platforms = CYTHON_DEFAULT_PLATFORMS,
     use_raw_headers = True,
     xplat_impl = folly_xplat_library,
@@ -306,7 +301,7 @@ fb_dirsync_cpp_library(
         "folly/python/iobuf.h": "iobuf.h",
         # @fb-only[end= ]: "folly/python/iobuf_api.h": ":iobuf__iobuf_api.h",
     },
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     # TODO(T36778537): Cython-generated `*_api.h` headers aren't modular.
     modular_headers = False,
     platforms = CYTHON_DEFAULT_PLATFORMS,
@@ -370,7 +365,7 @@ fb_dirsync_cpp_library(
     name = "fibers_lib",
     srcs = ["fibers.cpp"],
     headers = ["fibers.h"],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     compiler_flags = select({
         "DEFAULT": [],
         "ovr_config//os:windows": [
@@ -438,7 +433,7 @@ fb_dirsync_cpp_library(
     name = "error",
     srcs = ["error.cpp"],
     headers = ["error.h"],
-    apple_sdks = _MACOS_ONLY_APPLE_SDKS,
+    apple_sdks = CYTHON_DEFAULT_APPLE_SDKS,
     platforms = CYTHON_DEFAULT_PLATFORMS,
     use_raw_headers = True,
     xplat_impl = folly_xplat_library,
