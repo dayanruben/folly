@@ -231,39 +231,65 @@ class CheckpointAccountingTest(unittest.TestCase):
             self.assertEqual([record["phase"] for record in records], ["initial"])
 
     def test_word_change_ignores_markdown_reflow(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            before = root / "before.md"
-            after = root / "after.md"
-            before.write_text("> one two\n> three\n")
-            after.write_text("> one\n> two three\n")
-
-            self.assertEqual(
-                checkpoint_accounting._changed_word_percent(before, after), 0.0
-            )
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {Path("main.md"): b"> one two\n> three\n"},
+                {Path("main.md"): b"> one\n> two three\n"},
+            )[0],
+            0.0,
+        )
 
     def test_word_change_is_bounded_for_reordering(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            before = root / "before.md"
-            after = root / "after.md"
-            before.write_text("one two three\n")
-            after.write_text("three two one\n")
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {Path("main.md"): b"one two three\n"},
+                {Path("main.md"): b"three two one\n"},
+            )[0],
+            66.7,
+        )
 
-            self.assertEqual(
-                checkpoint_accounting._changed_word_percent(before, after), 66.7
-            )
+    def test_words_are_aggregated_per_file(self) -> None:
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {
+                    Path("a"): b"one two",
+                    Path("b"): b"three four five",
+                },
+                {
+                    Path("a"): b"one changed",
+                    Path("b"): b"three four five",
+                },
+            ),
+            (20.0, ["a"]),
+        )
+
+    def test_renames_do_not_cancel_word_changes(self) -> None:
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {Path("old"): b"same words"},
+                {Path("new"): b"same words"},
+            ),
+            (100.0, ["new", "old"]),
+        )
+
+    def test_empty_file_addition_is_reported(self) -> None:
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {Path("main.md"): b"same"},
+                {Path("main.md"): b"same", Path("empty-file"): b""},
+            ),
+            (0.0, ["empty-file"]),
+        )
 
     def test_word_count_tolerates_invalid_utf8(self) -> None:
         # A stray undecodable byte must not invalidate an otherwise saved run.
-        with tempfile.TemporaryDirectory() as temporary:
-            before = Path(temporary) / "before.md"
-            after = Path(temporary) / "after.md"
-            before.write_bytes(b"same words \xff\n")
-            after.write_text("same words\n")
-            self.assertEqual(
-                checkpoint_accounting._changed_word_percent(before, after), 0.0
-            )
+        self.assertEqual(
+            checkpoint_accounting._artifact_changes(
+                {Path("main.md"): b"same words \xff\n"},
+                {Path("main.md"): b"same words\n"},
+            )[0],
+            0.0,
+        )
 
     def test_companion_only_mutation_after_final_checkpoint_is_rejected(self) -> None:
         # main.md stays fixed. Changing only the notes' line endings, or deleting

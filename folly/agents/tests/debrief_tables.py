@@ -89,9 +89,12 @@ def _total_cost(costs: list[Decimal | None]) -> Decimal | None:
 
 def _impact_table(records: list[dict[str, Any]], model: str) -> list[str]:
     """Pair each phase's cost with room for the author's semantic summary."""
+    has_paths = any("changed_paths" in record for record in records)
+    path_columns = " Changed paths |" if has_paths else ""
+    path_separators = " --- |" if has_paths else ""
     lines = [
-        "| Phase | Main effect | Changed words vs prior | Wall time | Est. cost |",
-        "| --- | --- | ---: | ---: | ---: |",
+        f"| Phase | Main effect | Changed words vs prior |{path_columns} Wall time | Est. cost |",
+        f"| --- | --- | ---: |{path_separators} ---: | ---: |",
     ]
     costs: list[Decimal | None] = []
     durations = []
@@ -105,17 +108,24 @@ def _impact_table(records: list[dict[str, Any]], model: str) -> list[str]:
         duration = Decimal(str(record["wall_seconds"])).quantize(_TIME_PRECISION)
         durations.append(duration)
         changed = record["changed_word_percent"]
+        path_cells = ""
+        if has_paths:
+            paths = ", ".join(
+                path.replace("|", "\\|").replace("\n", "\\n")
+                for path in record.get("changed_paths", [])
+            )
+            path_cells = f" {paths or '—'} |"
         lines.append(
             f"| {_phase_label(record['phase'])} | "
             f"{'Initial artifact' if record['phase'] == 'initial' else 'TODO'} | "
-            f"{'—' if changed is None else f'{changed:.1f}%'} | "
+            f"{'—' if changed is None else f'{changed:.1f}%'} |{path_cells} "
             f"{_duration(duration)} | {_cost_text(cost)} |"
         )
 
     total_seconds = sum(durations, Decimal())
     total_cost = _total_cost(costs)
     lines.append(
-        f"| **Production total** |  | — | **{_duration(total_seconds)}** | "
+        f"| **Production total** |  | — |{' — |' if has_paths else ''} **{_duration(total_seconds)}** | "
         f"**{_cost_text(total_cost)}** |"
     )
     return lines

@@ -301,19 +301,33 @@ def _review_usage_by_checkpoint(
     return usage
 
 
-def _changed_word_percent(before: Path | None, after: Path) -> float | None:
-    """Measure changed words without counting Markdown reflow as a change."""
-    if before is None:
-        return None
-    pattern = r"\w+(?:[-'./:]+\w+)*"
-    old_words = re.findall(
-        pattern, before.read_text(encoding="utf-8", errors="replace")
-    )
-    new_words = re.findall(pattern, after.read_text(encoding="utf-8", errors="replace"))
-    matcher = SequenceMatcher(None, old_words, new_words, autojunk=False)
-    unchanged = sum(block.size for block in matcher.get_matching_blocks())
-    changed = max(len(old_words), len(new_words)) - unchanged
-    return round(100 * changed / max(len(old_words), len(new_words), 1), 1)
+def _words(contents: bytes) -> list[str]:
+    text = contents.decode("utf-8", errors="replace")
+    return re.findall(r"\w+(?:[-'./:]+\w+)*", text)
+
+
+def _artifact_changes(
+    before: directory_snapshot.Snapshot | None, after: directory_snapshot.Snapshot
+) -> tuple[float | None, list[str]]:
+    """Match words per file so renames cannot cancel artifact changes."""
+    old = before or {}
+    paths = sorted(old.keys() | after.keys())
+    changed_paths = [
+        path.as_posix()
+        for path in paths
+        if path not in old or path not in after or old[path] != after[path]
+    ]
+    changed = total = 0
+    for path in paths:
+        old_words = _words(old.get(path, b""))
+        new_words = _words(after.get(path, b""))
+        matcher = SequenceMatcher(None, old_words, new_words, autojunk=False)
+        unchanged = sum(block.size for block in matcher.get_matching_blocks())
+        size = max(len(old_words), len(new_words))
+        changed += size - unchanged
+        total += size
+    percent = None if before is None else round(100 * changed / max(total, 1), 1)
+    return percent, changed_paths
 
 
 def _write_phase_records(
@@ -329,7 +343,7 @@ def _write_phase_records(
     """Write named phase drafts while keeping time and token cost incremental."""
     records: list[dict[str, object]] = []
     previous_author = dict.fromkeys(TOKEN_FIELDS, 0)
-    previous_path: Path | None = None
+    previous_entries: directory_snapshot.Snapshot | None = None
     previous_time = started_at
     for index, (
         path,
@@ -349,16 +363,17 @@ def _write_phase_records(
         phase = "initial" if index == 0 else "author"
         if index >= 2:
             phase = f"review{index - 1}"
-        artifact = "output" if index == len(paths) - 1 else f"output-{phase}"
-        if artifact != "output":
-            directory_snapshot.write(directory_snapshot.read(path), run_root / artifact)
+        artifact_name = "output" if index == len(paths) - 1 else f"output-{phase}"
+        entries = directory_snapshot.read(path)
+        if artifact_name != "output":
+            directory_snapshot.write(entries, run_root / artifact_name)
+        changed_percent, changed_paths = _artifact_changes(previous_entries, entries)
         records.append(
             {
-                "artifact": artifact,
+                "artifact": artifact_name,
                 "author_tokens": author_tokens,
-                "changed_word_percent": _changed_word_percent(
-                    previous_path, path / "main.md"
-                ),
+                "changed_word_percent": changed_percent,
+                "changed_paths": changed_paths,
                 "context_window": context_window,
                 "outcome": _outcome(
                     index, len(paths) - 1, review_budget, final_message
@@ -369,7 +384,7 @@ def _write_phase_records(
             }
         )
         previous_author = author_cumulative
-        previous_path = path / "main.md"
+        previous_entries = entries
         previous_time = completed
     return records
 

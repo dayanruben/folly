@@ -73,16 +73,18 @@ class DebriefTablesTest(unittest.TestCase):
                 ((50, 20, 5, 2), (10, 5, 0, 1)),
             ),
         ]
+        records[0]["changed_paths"] = ["main.md"]
+        records[1]["changed_paths"] = ["main.md", "notes.md"]
 
         output = debrief_tables.render(records, "gpt-5.6-sol")
 
         self.assertEqual(
             output,
-            """| Phase | Main effect | Changed words vs prior | Wall time | Est. cost |
-| --- | --- | ---: | ---: | ---: |
-| Initial draft | Initial artifact | — | 0:10.0 | $0.0008 |
-| Author review | TODO | 12.5% | 0:09.0 | $0.0013 |
-| **Production total** |  | — | **0:19.0** | **$0.0021** |
+            """| Phase | Main effect | Changed words vs prior | Changed paths | Wall time | Est. cost |
+| --- | --- | ---: | --- | ---: | ---: |
+| Initial draft | Initial artifact | — | main.md | 0:10.0 | $0.0008 |
+| Author review | TODO | 12.5% | main.md, notes.md | 0:09.0 | $0.0013 |
+| **Production total** |  | — | — | **0:19.0** | **$0.0021** |
 
 | Phase | Uncached input | Cached input | Cache write | Output |
 | --- | ---: | ---: | ---: | ---: |

@@ -1142,6 +1142,8 @@ class RunScenarioTest(unittest.TestCase):
         self.assertEqual((run.root / "output-initial/notes.md").read_text(), "notes")
         self.assertEqual((run.root / "output/notes.md").read_text(), "reviewed notes")
         self.assertFalse((run.root / "output-author").exists())
+        records = json.loads((run.root / "checkpoints.json").read_text())
+        self.assertEqual(records[1]["changed_paths"], ["notes.md"])
         self.assertEqual(
             json.loads((run.root / "run.json").read_text())["checkpoint_count"], 2
         )
