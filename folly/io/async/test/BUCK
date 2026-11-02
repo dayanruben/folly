@@ -1,53 +1,11 @@
-load("@fbcode_macros//build_defs:build_file_migration.bzl", "fbcode_target", "non_fbcode_target")
-load("@fbcode_macros//build_defs:cpp_benchmark.bzl", "cpp_benchmark")
-load("@fbcode_macros//build_defs:cpp_binary.bzl", "cpp_binary")
-load("@fbcode_macros//build_defs:cpp_library.bzl", "cpp_library")
-load("@fbcode_macros//build_defs:cpp_unittest.bzl", "cpp_unittest")
 load("@fbsource//tools/build_defs:testpilot_defs.bzl", "tpx_labels")
+load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_benchmark.bzl", "fb_dirsync_cpp_benchmark")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_binary.bzl", "fb_dirsync_cpp_binary")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_library.bzl", "fb_dirsync_cpp_library")
 load("@fbsource//tools/build_defs/dirsync:fb_dirsync_cpp_unittest.bzl", "fb_dirsync_cpp_unittest")
-load("../../../defs.bzl", "folly_xplat_cxx_library", "folly_xplat_cxx_test")
 load("../../../io/async/test/certs/defs.bzl", "alias_pem")
 
 oncall("fbcode_entropy_wardens_folly")
-
-non_fbcode_target(
-    _kind = folly_xplat_cxx_library,
-    name = "test_ssl_server",
-    srcs = [
-        "TestSSLServer.cpp",
-    ],
-    raw_headers = [
-        "TestSSLServer.h",
-    ],
-    resources = {
-        "certs/ca-cert.pem": "//xplat/folly/io/async/test/certs:ca-cert.pem",
-        "certs/client_ca_cert.pem": "//xplat/folly/io/async/test/certs:client_ca_cert.pem",
-        "certs/client_cert.pem": "//xplat/folly/io/async/test/certs:client_cert.pem",
-        "certs/client_chain.pem": "//xplat/folly/io/async/test/certs:client_chain.pem",
-        "certs/client_key.pem": "//xplat/folly/io/async/test/certs:client_key.pem",
-        "certs/tests-cert.pem": "//xplat/folly/io/async/test/certs:tests-cert.pem",
-        "certs/tests-key.pem": "//xplat/folly/io/async/test/certs:tests-key.pem",
-    },
-    deps = [
-        "fbsource//xplat/folly/portability:openssl",
-    ],
-    exported_deps = [
-        "fbsource//xplat/folly/portability:gtest",
-        "fbsource//xplat/folly/portability:sockets",
-        "fbsource//xplat/folly/portability:unistd",
-        ":callback_state_enum",
-        "//xplat/folly:network_address",
-        "//xplat/folly/io/async:async_base",
-        "//xplat/folly/io/async:async_socket",
-        "//xplat/folly/io/async:async_ssl_socket",
-        "//xplat/folly/io/async:async_transport",
-        "//xplat/folly/io/async:server_socket",
-        "//xplat/folly/io/async/ssl:ssl_errors",
-        "//xplat/folly/testing:test_util",
-    ],
-)
 
 fb_dirsync_cpp_library(
     name = "tfo_util",
@@ -115,62 +73,6 @@ fb_dirsync_cpp_library(
         "//folly/portability:string",
         "//folly/portability:unistd",
         "//folly/testing:test_util",
-    ],
-)
-
-non_fbcode_target(
-    _kind = folly_xplat_cxx_test,
-    name = "async_ssl_socket_test",
-    srcs = [
-        "AsyncSSLSocketTest.cpp",
-        "AsyncSSLSocketTest2.cpp",
-    ],
-    oncall = "secure_pipes",
-    resources = {
-        "certs/ca-cert.pem": "//xplat/folly/io/async/test/certs:ca-cert.pem",
-        "certs/client_ca_cert.pem": "//xplat/folly/io/async/test/certs:client_ca_cert.pem",
-        "certs/client_cert.pem": "//xplat/folly/io/async/test/certs:client_cert.pem",
-        "certs/client_key.pem": "//xplat/folly/io/async/test/certs:client_key.pem",
-        "certs/tests-cert.pem": "//xplat/folly/io/async/test/certs:tests-cert.pem",
-        "certs/tests-key.pem": "//xplat/folly/io/async/test/certs:tests-key.pem",
-    },
-    deps = [
-        "fbsource//xplat/folly/futures:core",
-        "fbsource//xplat/folly/init:init",
-        "fbsource//xplat/folly/io:iobuf",
-        "fbsource//xplat/folly/io:socket_option_map",
-        "fbsource//xplat/folly/portability:gmock",
-        "fbsource//xplat/folly/portability:gtest",
-        "fbsource//xplat/folly/portability:openssl",
-        "fbsource//xplat/folly/portability:pthread",
-        "fbsource//xplat/folly/portability:sockets",
-        "fbsource//xplat/folly/portability:string",
-        "fbsource//xplat/folly/portability:unistd",
-        ":async_ssl_socket_test_lib",
-        ":blocking_socket",
-        ":mocks",
-        ":test_ssl_server",
-        ":tfo_util",
-        "//xplat/folly:exception_wrapper",
-        "//xplat/folly:string",
-        "//xplat/folly/io/async:async_base",
-        "//xplat/folly/io/async:async_pipe",
-        "//xplat/folly/io/async:async_socket",
-        "//xplat/folly/io/async:async_socket_exception",
-        "//xplat/folly/io/async:async_ssl_socket",
-        "//xplat/folly/io/async:async_transport",
-        "//xplat/folly/io/async:event_base_thread",
-        "//xplat/folly/io/async:scoped_event_base_thread",
-        "//xplat/folly/io/async:ssl_context",
-        "//xplat/folly/io/async:ssl_options",
-        "//xplat/folly/io/async/ssl:basic_transport_certificate",
-        "//xplat/folly/io/async/ssl:openssl_transport_certificate",
-        "//xplat/folly/io/async/ssl:ssl_errors",
-        "//xplat/folly/net:net_ops",
-        "//xplat/folly/net:network_socket",
-        "//xplat/folly/net/test:mock_net_ops_dispatcher",
-        "//xplat/third-party/openssl:crypto",
-        "//xplat/third-party/openssl:ssl",
     ],
 )
 
@@ -496,8 +398,8 @@ fb_dirsync_cpp_unittest(
     oncall = "thrift",
     supports_static_listing = False,
     deps = [
-        ":async_signal_handler_test_lib",
-        ":event_base_test_lib",
+        ":async_signal_handler_test_lib",  # @manual
+        ":event_base_test_lib",  # @manual
         "//folly/init:init",
         "//folly/portability:gtest",
     ],
@@ -685,31 +587,6 @@ fb_dirsync_cpp_binary(
     ],
 )
 
-non_fbcode_target(
-    _kind = folly_xplat_cxx_test,
-    name = "ssl_session_test",
-    srcs = [
-        "SSLSessionTest.cpp",
-    ],
-    oncall = "secure_pipes",
-    raw_headers = [],
-    resources = {
-        "certs/ca-cert.pem": "//xplat/folly/io/async/test/certs:ca-cert.pem",
-        "certs/tests-cert.pem": "//xplat/folly/io/async/test/certs:tests-cert.pem",
-        "certs/tests-key.pem": "//xplat/folly/io/async/test/certs:tests-key.pem",
-    },
-    deps = [
-        "fbsource//xplat/folly/portability:gtest",
-        "fbsource//xplat/folly/portability:openssl",
-        "fbsource//xplat/folly/portability:sockets",
-        ":async_ssl_socket_test_lib",
-        "//xplat/folly/net:net_ops",
-        "//xplat/folly/net:network_socket",
-        "//xplat/folly/ssl:ssl_session",
-        "//xplat/folly/ssl/detail:openssl_session",
-    ],
-)
-
 fb_dirsync_cpp_unittest(
     name = "time_util_test",
     srcs = ["TimeUtilTest.cpp"],
@@ -718,34 +595,6 @@ fb_dirsync_cpp_unittest(
         ":util",
         "//folly/portability:gtest",
         "//folly/portability:unistd",
-    ],
-)
-
-non_fbcode_target(
-    _kind = folly_xplat_cxx_test,
-    name = "ssl_context_test",
-    srcs = [
-        "SSLContextTest.cpp",
-    ],
-    oncall = "secure_pipes",
-    raw_headers = [],
-    resources = {
-        "certs/client_chain.pem": "//xplat/folly/io/async/test/certs:client_chain.pem",
-        "certs/client_key.pem": "//xplat/folly/io/async/test/certs:client_key.pem",
-        "certs/clienti_key.pem": "//xplat/folly/io/async/test/certs:clienti_key.pem",
-        "certs/tests-cert.pem": "//xplat/folly/io/async/test/certs:tests-cert.pem",
-        "certs/tests-key.pem": "//xplat/folly/io/async/test/certs:tests-key.pem",
-    },
-    deps = [
-        "fbsource//xplat/folly/portability:gtest",
-        "fbsource//xplat/folly/portability:openssl",
-        ":ssl_util",
-        "//xplat/folly:file_util",
-        "//xplat/folly/io/async:ssl_context",
-        "//xplat/folly/ssl:openssl_cert_utils",
-        "//xplat/folly/ssl:openssl_key_utils",
-        "//xplat/folly/ssl:openssl_ptr_types",
-        "//xplat/folly/testing:test_util",
     ],
 )
 
@@ -901,8 +750,7 @@ fb_dirsync_cpp_binary(
 
 # !!!! fbcode/folly/io/async/test/TARGETS was merged into this file, see https://fburl.com/workplace/xl8l9yuo for more info !!!!
 
-fbcode_target(
-    _kind = alias_pem,
+alias_pem(
     pems = [
         "tests-cert.pem",
         "tests-key.pem",
@@ -915,8 +763,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_library,
+fb_dirsync_cpp_library(
     name = "test_ssl_server",
     srcs = [
         "TestSSLServer.cpp",
@@ -952,8 +799,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "async_ssl_socket_test",
     srcs = [
         "AsyncSSLSocketTest.cpp",
@@ -1016,10 +862,10 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "decorated_async_transport_wrapper_test",
     srcs = ["DecoratedAsyncTransportWrapperTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:async_socket",
         "//folly/io/async:async_transport",
@@ -1028,8 +874,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "hhwheel_timer_slow_test",
     srcs = ["HHWheelTimerSlowTests.cpp"],
     headers = [],
@@ -1038,6 +883,7 @@ fbcode_target(
         "load-sensitive-timing-test",
     ],
     oncall = "thrift",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":util",
         "//folly:random",
@@ -1046,11 +892,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_benchmark,
+fb_dirsync_cpp_benchmark(
     name = "request_context_benchmark",
     srcs = ["RequestContextBenchmark.cpp"],
     headers = ["RequestContextHelper.h"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:conv",
         "//folly/container:array",
@@ -1061,10 +907,10 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "terminate_cancellation_token_test",
     srcs = ["TerminateCancellationTokenTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:terminate_cancellation_token",
         "//folly/portability:gtest",
@@ -1072,8 +918,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "ssl_session_test",
     srcs = ["SSLSessionTest.cpp"],
     headers = [],
@@ -1096,8 +941,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "ssl_context_test",
     srcs = ["SSLContextTest.cpp"],
     headers = [],
@@ -1122,12 +966,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "ssl_context_regression_test",
     srcs = ["SSLContextRegressionTest.cpp"],
     headers = [],
     oncall = "secure_pipes",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:file_util",
         "//folly/io/async:ssl_context",
@@ -1136,12 +980,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "timerfd_timeout_manager_test",
     srcs = ["TimerFDTimeoutManagerTest.cpp"],
     headers = [],
     labels = ["load-sensitive-timing-test"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:timerfd",
         "//folly/io/async/test:util",
@@ -1149,12 +993,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "hhwheel_timer_high_res_test",
     srcs = ["HHWheelTimerHighResTest.cpp"],
     headers = [],
     labels = ["load-sensitive-timing-test"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:async_base",
         "//folly/io/async:timerfd",
@@ -1163,11 +1007,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "hhwheel_timer_high_res_benchmark",
     srcs = ["HHWheelTimerHighResBenchmark.cpp"],
     headers = [],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly/io/async:timerfd",
@@ -1175,23 +1019,23 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "async_io_test",
     srcs = ["AsyncIOTest.cpp"],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:async_io",
         "//folly/io/async/test:async_base_test_lib",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "async_io_uring_socket_test",
     srcs = ["AsyncIoUringSocketTest.cpp"],
     labels = [tpx_labels.heavyweight],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":async_socket_test_lib",
         "//folly:file_util",
@@ -1212,8 +1056,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "epoll_backend_test",
     srcs = ["EpollBackendTest.cpp"],
     labels = [
@@ -1222,6 +1065,7 @@ fbcode_target(
     ],
     owner = "dmm@xmail.facebook.com",
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:epoll_backend",
         "//folly/io/async/test:async_signal_handler_test_lib",
@@ -1229,11 +1073,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "poll_loop_hooks_test",
     srcs = ["PollLoopHooksTest.cpp"],
     owner = "dmm@xmail.facebook.com",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:async_base",
         "//folly/io/async:epoll_backend",
@@ -1241,11 +1085,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "io_benchmark",
     srcs = ["IOBenchmark.cpp"],
     headers = [],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly:file_util",
@@ -1257,11 +1101,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "io_uring_backend_bench",
     srcs = ["IoUringBackendBench.cpp"],
     headers = [],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly:file_util",
@@ -1274,11 +1118,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "io_uring_provided_buffer_ring_benchmark",
     srcs = ["IoUringProvidedBufferRingBenchmark.cpp"],
     headers = [],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly/init:init",
@@ -1286,11 +1130,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_backend_setup_test",
     srcs = ["IoUringBackendSetupTest.cpp"],
     owner = "kvigor@xmail.facebook.com",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:async_base",
         "//folly/io/async:io_uring_backend",
@@ -1299,8 +1143,7 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_backend_test",
     srcs = ["IoUringBackendTest.cpp"],
     headers = [],
@@ -1311,6 +1154,7 @@ fbcode_target(
     ],
     owner = "dmm@xmail.facebook.com",
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:file_util",
         "//folly:function",
@@ -1328,11 +1172,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_event_base_local_test",
     srcs = ["IoUringEventBaseLocalTest.cpp"],
     owner = "dylany@xmail.facebook.com",
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/futures:core",
         "//folly/io/async:io_uring_backend",
@@ -1341,12 +1185,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_event_test",
     srcs = ["IoUringEventTest.cpp"],
     owner = "dylany@xmail.facebook.com",
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/futures:core",
         "//folly/io/async:async_base",
@@ -1356,13 +1200,13 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_test",
     srcs = ["IoUringTest.cpp"],
     labels = ["oss-broken"],
     owner = "dmm@xmail.facebook.com",
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/init:init",
         "//folly/io/async:io_uring",
@@ -1370,63 +1214,63 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_zero_copy_buffer_pool_test",
     srcs = ["IoUringZeroCopyBufferPoolTest.cpp"],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:io_uring_zero_copy_buffer_pool",
         "//folly/portability:unistd",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_provided_buffer_ring_test",
     srcs = ["IoUringProvidedBufferRingTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:io_uring_provided_buffer_ring",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_provided_buffer_ring_max_capacity_test",
     srcs = ["IoUringProvidedBufferRingMaxCapacityTest.cpp"],
     labels = [
         tpx_labels.heavyweight8,
         tpx_labels.serialize_test_cases,
     ],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:io_uring_provided_buffer_ring",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_dynamic_provided_buffer_ring_test",
     srcs = ["IoUringDynamicProvidedBufferRingTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:io_uring_dynamic_provided_buffer_ring",
         "//folly/io/async:io_uring_setup_retry",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "io_uring_dynamic_provided_buffer_ring_max_capacity_test",
     srcs = ["IoUringDynamicProvidedBufferRingMaxCapacityTest.cpp"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly/io/async:io_uring_dynamic_provided_buffer_ring",
     ],
 )
 
-fbcode_target(
-    _kind = cpp_binary,
+fb_dirsync_cpp_binary(
     name = "registered_fd_benchmark",
     srcs = ["RegisteredFdBenchmark.cpp"],
     headers = [],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:benchmark",
         "//folly:file_util",
@@ -1436,11 +1280,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "simple_async_io_test",
     srcs = ["SimpleAsyncIOTest.cpp"],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "fbsource//third-party/glog:glog",
         "//folly:file",
@@ -1457,11 +1301,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_library,
+fb_dirsync_cpp_library(
     name = "io_test_temp_file_util_lib",
     srcs = ["IoTestTempFileUtil.cpp"],
     headers = ["IoTestTempFileUtil.h"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:file_util",
         "//folly:string",
@@ -1473,11 +1317,11 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_library,
+fb_dirsync_cpp_library(
     name = "async_base_test_lib",
     srcs = ["AsyncBaseTestLib.cpp"],
     headers = ["AsyncBaseTestLib.h"],
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     exported_deps = [
         "fbsource//third-party/glog:glog",
         "//folly:scope_guard",
@@ -1492,11 +1336,12 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_library,
+fb_dirsync_cpp_library(
     name = "mux_io_thread_pool_executor_test_lib",
     srcs = ["MuxIOThreadPoolExecutorTest.cpp"],
+    # @lint-ignore BUCKLINT
     link_whole = True,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         "//folly:function",
         "//folly/executors/test:IOThreadPoolExecutorBaseTestLib",
@@ -1508,39 +1353,39 @@ fbcode_target(
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "mux_io_thread_pool_executor_test_epoll",
     args = [
         "--folly_mux_io_thread_pool_executor_poller_backend=epoll",
         "--folly_mux_io_thread_pool_executor_poller_epoll_rearm_inline=false",
     ],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":mux_io_thread_pool_executor_test_lib",  # @manual
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "mux_io_thread_pool_executor_test_epoll_rearm_inline",
     args = [
         "--folly_mux_io_thread_pool_executor_poller_backend=epoll",
         "--folly_mux_io_thread_pool_executor_poller_epoll_rearm_inline=true",
     ],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":mux_io_thread_pool_executor_test_lib",  # @manual
     ],
 )
 
-fbcode_target(
-    _kind = cpp_unittest,
+fb_dirsync_cpp_unittest(
     name = "mux_io_thread_pool_executor_test_io_uring",
     args = [
         "--folly_mux_io_thread_pool_executor_poller_backend=io_uring",
     ],
     supports_static_listing = False,
+    target_compatible_with = ["ovr_config//runtime:fbcode"],
     deps = [
         ":mux_io_thread_pool_executor_test_lib",  # @manual
     ],

@@ -256,13 +256,14 @@ def folly_xplat_library(
 def folly_xplat_cxx_library(name, **kwargs):
     folly_xplat_library(name = name, **kwargs)
 
-def folly_xplat_cxx_test(name, srcs, raw_headers = [], headers = [], deps = [], oncall = None, **kwargs):
+def folly_xplat_cxx_test(name, srcs = [], raw_headers = [], headers = [], deps = [], oncall = None, **kwargs):
     # resources and env are cherry picked because some of the other kwargs
     # have issues that need to be investigated.
     # e.g., Some args are duplicated. Some args cause TSAN errors.
     # TODO(T188948036): Fix xplat/folly:folly-futures-test and folly_xplat_cxx_test
     resources = kwargs.get("resources", [])
     env = kwargs.get("env", None)
+    args = kwargs.get("args", None)
     labels = kwargs.get("labels", None)
     modifiers = kwargs.get("modifiers", None)
     constraint_overrides = kwargs.get("constraint_overrides", None)
@@ -281,6 +282,8 @@ def folly_xplat_cxx_test(name, srcs, raw_headers = [], headers = [], deps = [], 
         extra_kwargs["oncall"] = oncall
     if env != None:
         extra_kwargs["env"] = env
+    if args != None:
+        extra_kwargs["args"] = args
     if labels != None:
         extra_kwargs["labels"] = labels
     if modifiers != None:
