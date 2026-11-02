@@ -1908,6 +1908,34 @@ TEST(IOBuf, copyConstructBufferTooLarge) {
       std::bad_alloc);
 }
 
+TEST(IOBuf, CoalesceCapacityOverflow) {
+  constexpr auto kMax = std::numeric_limits<size_t>::max();
+  for (const bool overflowHeadroom : {false, true}) {
+    auto buf = seq({"abc", "de"});
+    const size_t headroom = overflowHeadroom ? kMax : 0;
+    const size_t tailroom = overflowHeadroom ? 1 : kMax;
+    ASSERT_TRUE(buf->isChained());
+
+    EXPECT_THROW(
+        buf->coalesceWithHeadroomTailroom(headroom, tailroom), std::bad_alloc);
+
+    EXPECT_TRUE(buf->isChained());
+    EXPECT_EQ("abcde", buf->to<std::string>());
+  }
+}
+
+TEST(IOBuf, CoalesceHeadroomTailroom) {
+  auto buf = seq({"abc", "de"});
+  ASSERT_TRUE(buf->isChained());
+
+  buf->coalesceWithHeadroomTailroom(4, 8);
+
+  EXPECT_FALSE(buf->isChained());
+  EXPECT_EQ("abcde", buf->to<std::string>());
+  EXPECT_EQ(4, buf->headroom());
+  EXPECT_GE(buf->tailroom(), 8);
+}
+
 TEST(IOBuf, MaybeSplitTail) {
   auto buf = IOBuf::create(256);
   append(buf, "Hello ");
