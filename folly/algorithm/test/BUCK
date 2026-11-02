@@ -14,12 +14,34 @@ fb_dirsync_cpp_unittest(
 )
 
 fb_dirsync_cpp_unittest(
+    name = "gallop_test",
+    srcs = ["gallop_test.cpp"],
+    headers = [],
+    deps = [
+        "//folly/algorithm:gallop",
+        "//folly/lang:hint",
+        "//folly/portability:gtest",
+    ],
+)
+
+fb_dirsync_cpp_unittest(
     name = "stable_radix_sort_test",
     srcs = ["StableRadixSortTest.cpp"],
     headers = [],
     deps = [
         "//folly/algorithm:stable_radix_sort",
         "//folly/portability:gtest",
+    ],
+)
+
+fb_dirsync_cpp_benchmark(
+    name = "gallop_bench",
+    srcs = ["gallop_bench.cpp"],
+    headers = [],
+    deps = [
+        "//folly:benchmark",
+        "//folly/algorithm:gallop",
+        "//folly/init:init",
     ],
 )
 

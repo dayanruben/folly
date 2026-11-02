@@ -21,6 +21,12 @@ folly_add_library(
 )
 
 folly_add_library(
+  NAME gallop
+  HEADERS gallop.h
+  EXPORTED_DEPS folly_utility
+)
+
+folly_add_library(
   NAME stable_radix_sort
   HEADERS StableRadixSort.h
   EXPORTED_DEPS folly_traits

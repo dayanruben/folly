@@ -12,6 +12,15 @@ fb_dirsync_cpp_library(
 )
 
 fb_dirsync_cpp_library(
+    name = "gallop",
+    headers = ["gallop.h"],
+    use_raw_headers = True,
+    exported_deps = [
+        "//folly:utility",
+    ],
+)
+
+fb_dirsync_cpp_library(
     name = "stable_radix_sort",
     headers = ["StableRadixSort.h"],
     use_raw_headers = True,
